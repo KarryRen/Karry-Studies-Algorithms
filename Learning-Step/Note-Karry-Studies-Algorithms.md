@@ -6,7 +6,7 @@
 
 ## Sort
 
-### [Quick Sort]([785. 快速排序 - AcWing题库](https://www.acwing.com/problem/content/description/787/))
+### [Quick Sort](https://www.acwing.com/problem/content/description/787/)
 
 快排（时间复杂度 n logn）的核心思想是分而治之，主要步骤为：
 
