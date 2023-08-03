@@ -2,7 +2,7 @@
 
 <center>Karry</center>
 
-
+学好模板，直接使用
 
 ## Foundation
 
@@ -253,4 +253,83 @@ int main(){
 }
 ```
 
-### 
+### DICHOTOMY
+
+二分可以划分为`整数二分`和`实数二分`
+
+二分的本质并不是单调性，也就是说：有单调性的可以二分，但是没有单调性的也可能可以二分。
+
+#### [整数二分](https://www.acwing.com/problem/content/791/)
+
+> 因为有边界问题，所以要考虑的东西有点多
+
+二分的本质是可以找到一个确定的边界将原结构一分为二。
+
+共有两个模板，关于如何选择，有一个迅速的口诀 `左 1 右 0`（来自于边界是否会死循环）：
+
+```c++
+// 记住二分的本质前提 永远是区间找边界，那就可能是找左边界，或者是右边界
+// 比如元素 `起始位置` 和 `终点位置` 这道题目
+// 起始位置是找左边界，终点位置是找右边界 
+
+// 找左边界的模板
+void dichotomy_branch1(){
+    // - step 1 set the l and r boundary
+    int l = 0, r = n - 1;
+    
+   	// - step 2 do the operation
+    while(l < r){
+        // -- set the mid
+        int mid = l + r >> 1;
+        // -- check() must be true, so r = mid
+        if(check(mid)) r = mid; // here chech(mid) is q[mid] >= num;
+        else l = mid + 1;
+    }
+}
+
+// 找右边界的模板
+void dichotomy_branch1(){
+    // - step 1 set the l and r boundary
+    int l = 0, r = n - 1;
+    
+   	// - step 2 do the operation
+    while(l < r){
+        // -- set the mid
+        int mid = l + r + 1 >> 1;
+        // -- check() must be true, so r = mid
+        if(check(mid)) l = mid; // here chech(mid) is q[mid] <= num;
+        else r = mid - 1;
+    }
+}
+```
+
+ 二分算法一定是可以找到边界的，只不过边界的答案不满足性质，那就说明这个题目无解了。
+
+#### [实数二分](https://www.acwing.com/problem/content/792/)
+
+> 没有边界问题了，但是有精确值问题，如果是保留 n 位小数，一般是让 l 和 r 之间的差别小于 $10^{-(n + 2)}$ 注意变量类型即可
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+int main(){
+	double num; // the num needed to be computed the cubic root
+	scanf("%lf", &num);
+	
+	double l = -1e5, r = 1e5; // the l and r boundary
+	while(l < r - 1e-8){ // 1e-8 is from the experience
+		double mid = (l + r) / 2;
+		
+		if(mid * mid * mid >= num) r = mid;
+		else l = mid;
+		printf("%lf %lf\n", l, r);
+	}
+
+	printf("%lf\n", l);
+	
+	return 0;
+}
+```
+
