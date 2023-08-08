@@ -599,8 +599,6 @@ int main() {
 }
 ```
 
-
-
 ### 1.4 PREFIX-SUM AND DIFFERENCE
 
 前缀和和差分本质是一个互运算，二者所用的核心的原理是前缀求和中的递推以及集合代表个体的思想，这种思想值得思索。
@@ -828,4 +826,321 @@ int main() {
     return 0;
 }
 ```
+
+### 1.5 TWO-POINTERS
+
+> 双指针算法就像其名字一样，有两个指针进行操作
+
+整体来说分为两大类：
+
+1. 一种像归并排序对两个序列进行同时操作
+2. 一种像快速排序对一个序列进行操作
+
+所有双指针算法的模版都是类似的：
+
+```c++
+// 先对第一个指针进行遍历
+for (int i = 0; i < n; i++) {
+	// 再对第二个进行操作 (chech 是检验某种性质)
+  while (j < i && chech(i, j)) j++;
+  
+  // do other operation
+}
+```
+
+核心思想，是将朴素算法开两重循环的 $O(N^2)$ 复杂度优化成为 $O(N)$
+
+```c++
+// 朴素算法
+for (int i = 0; i < n; i++){
+  for (int j = 0; j < n; j++{
+    // do main operation
+  }
+}
+```
+
+一个最为经典的双指针算法 => split
+
+```c++
+input : "abc def ghi"
+output : "abc"
+  			 "def"
+         "ghi"
+
+/*
+    @author Karry 
+    @date on 2023/8/7.
+    @comment an example for two pointers -> split
+*/
+
+#include<iostream>
+#include<string.h>
+
+using namespace std;
+
+const int N = 1e6 + 10;
+
+int main() {
+    char str[N];
+
+    // input the string
+    gets(str);
+
+    int n = strlen(str);
+
+    // a template for two pointers
+    for (int i = 0; i < n; i++) {
+        int j = i;
+        while (j < n && str[j] != ' ') j++;
+
+        // do the other operations
+        for (int k = i; k < j; k++) cout << str[k]; // output the word
+        cout << endl;
+        
+        i = j;
+    }
+
+    return 0;
+}
+```
+
+#### [Longest Unrepeated Subsequence](https://www.acwing.com/problem/content/801/)
+
+> 最长的不包含相同元素的的子序列长度
+
+双指针问题的思考思路：
+
+1. `step 1` 一般都是先想一种暴力求解的方法
+
+   ```c++
+   // 暴力算法 确定哪个指针是头，哪个是尾
+   for (int i = 0; i < n; i++){
+     for (int j = 0; j <= i; j++{
+       // 如果 i 和 j 之间出现了重复的数字
+       if (chech(j, i){
+         res = max(res, i - j + 1);
+       }
+     }
+   }
+   ```
+
+2. `step 2` 然后用双指针算法进行优化。一般是发现某一个指针满足某种性质（尤其是==单调关系==）进而不需要重新从头遍历了，而是直接向后走，这样就完成了优化。
+
+   ```c++
+   // 对于这个题目来说，发现一个典型的性质那就是 j 是永远不需要往前走的，因此进行修正
+   for (int i = 0, j = 0; i < n; i++){
+     while(j <= i && check(j, i)) j++;
+     
+     res = max(res, i - j + 1);
+   }
+   // 这个题目的另一大难点在于，如何写 check
+   // 因为数据范围比较小，所以可以另外开一个数组记录原数组中每个数出现的次数
+   // i 指针持续向后移动，导致出现重复后，要想不再重复，就需要 j 指针向后移动直至将重复的值挤出去。
+   ```
+
+解答（如果改成字母就需要哈希表了）：
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/7.
+    @comment Day 7 two pointers lus
+*/
+
+#include<iostream>
+
+using namespace std;
+
+const int N = 1e6 + 10; // the boundary
+int a[N]; // the input array
+int s[N]; // the sum array to doc the times of a[n]
+
+int main() {
+    int n; // the length of input array
+    int res = 0; // the result
+    scanf("%d", &n);
+
+    // input the array
+    for (int i = 0; i < n; i++) scanf("%d", &a[i]);
+
+    // lus
+    for (int i = 0, j = 0; i < n; i++) {
+        s[a[i]]++; // doc the times of a[i]
+        while (j <= i && s[a[i]] > 1) {
+            // actually, the j <= i is useless, but it's more clear
+            s[a[j]]--;
+            j++;
+        }
+        res = max(res, i - j + 1);
+    }
+
+    printf("%d", res);
+
+    return 0;
+}
+```
+
+#### [Target Sum](https://www.acwing.com/problem/content/802/)
+
+还是按照双指针算法的经典求解思路来进行
+
+1. 先想暴力算法 （时间复杂度是 $O(nm)$）
+
+   ```c++
+   for (int i = 0; i < n; i++){
+     for (int j = 0; j <= m; j++{
+       if (a[i] + b[j] == x)
+         cout << i << " " << j << endl;
+   	    break;
+     }
+   }
+   ```
+
+2. 进行双指针优化，单调性在于：数组 A 和 B 是单调增的，但这种单调增并不是我们上面提到的单个指针的性质，需要将其做一个转化。==那就是一旦 A[i] + B[j] > x 后， j 一定只能单调减下来，对于递增的 A[i] 而言，解不可能在 j 右边。==
+
+   ```c++
+   for (int i = 0, j = m - 1; i < n; i++) {
+     while (j >= 0 && A[i] + B[j] > x) j-- ;
+     if (A[i] + B[j] == x) break;
+   }
+   ```
+
+   这样，时间复杂度就变为了 $O(n + m)$。
+
+解答：
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/7.
+    @Day 7 target sum
+*/
+
+#include<iostream>
+
+using namespace std;
+
+typedef long long LL; // because the boundary of the num in array is out of int. so we set long long
+const int N = 1e5 + 10; // the boundary of the length
+LL A[N], B[N];
+
+int main() {
+    int n, m;
+    LL x;
+    scanf("%d %d %lld", &n, &m, &x);
+
+    for (int i = 0; i < n; i++) scanf("%lld", &A[i]);
+    for (int i = 0; i < m; i++) scanf("%lld", &B[i]);
+
+    for (int i = 0, j = m - 1; i < n; i++) {
+        while (j >= 0 && A[i] + B[j] > x) j--; // j will never right move
+        if (A[i] + B[j] == x) {
+            printf("%d %d", i, j);
+            break; // must break
+        }
+    }
+
+    return 0;
+}
+```
+
+#### [Judge Subsequence](https://www.acwing.com/problem/content/2818/)
+
+> 此处子序列的含义略有变化，只要求顺序相同即可（顺次匹配），不要求连续
+
+这个题有着很显然的单调性，十分经典，所以直接使用双指针算法进行求解即可。遍历长序列，短序列递增即可。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/7.
+    @Day 7 judge subsequence
+*/
+
+#include<iostream>
+
+using namespace std;
+
+const int N = 1e5 + 10;
+int a[N], b[N]; // the two input array
+
+int main() {
+    int n, m;
+    scanf("%d %d", &n, &m);
+
+    for (int i = 0; i < n; i++) scanf("%d", &a[i]);
+    for (int i = 0; i < m; i++) scanf("%d", &b[i]);
+
+    int i = 0, j = 0;
+    while (i < n && j < m) {
+        if (a[i] == b[j]) i++; // i rightly move only equal
+        j++; // j rightly move forever
+    }
+
+    // make the final judgement
+    if (i == n) printf("Yes");
+    else printf("No");
+
+    return 0;
+}
+```
+
+### 1.6 BIT-OPERATION
+
+> 核心就是两个操作
+>
+> 1. n 的二进制表示中第 k 位是几 ？
+>
+>    ```c++
+>    step 1 先把第 k 位，移动到最后一位 n >> k
+>    step 2 看个位是多少 （& 1） 操作即可
+>    
+>    总的来说就是：右移动 k 位与上 1
+>    	n >> k & 1
+>    ```
+>
+> 2. 返回 x 的最后一位 1 是多少 （low bit）==简直就是一个脑筋急转弯==
+>
+>    ```c++
+>    low_bit(x) = x & (-x) = x & (~x + 1)
+>    ```
+
+#### [The Number of One](https://www.acwing.com/problem/content/803/)
+
+其实根据上面两个核心操作都可以完成这项工作了，但是第一个操作方法中，很难判断 n 的二进制位数，但是第二种方法进行减操作比较容易判定边际。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/8.
+    @comment Day 8 the number of one
+*/
+
+#include<iostream>
+
+using namespace std;
+
+int low_bit(int k) {
+    return k & (-k);
+}
+
+int main() {
+    int n; // there are n numbers should be computed
+    cin >> n;
+
+    while (n--) {
+        int k;
+        cin >> k;
+
+        int res = 0;
+        while (k) k -= low_bit(k), res++; // minus res times
+
+        cout << res << " ";
+    }
+
+    return 0;
+}
+```
+
+
 
