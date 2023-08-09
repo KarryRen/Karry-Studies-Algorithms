@@ -14,7 +14,7 @@
 
 快排（时间复杂度 $n log_2n$）的核心思想是`分治`，主要步骤为：
 
-```
+```c++
 设定数组 q 左右两边的下标为 l 和 r
 Step 1. 确定分界点 x: 可以是最左 (q[l]) | 最右 (q[r]) | 中间 (q[(l + r)/2]) | 随机 < 是数值 >
 Step 2. 调整区间: 保证分界点左边的数字都小于等于 x ，分界点右边的数都大于等于 x ， 分界点不一定是 x *难点*
@@ -23,7 +23,7 @@ Step 3. 递归处理左右两端
 
 `抓核心点`（Step 2） — 如何优雅快速地调整区间
 
-```
+```c++
 Way 1 : 比较暴力的方法，重新开两个数组
 	1. 开两个数组 a[], b[], 找到分界点 x 
 	2. 扫描一遍 q[ l ~ r ]
@@ -1142,5 +1142,198 @@ int main() {
 }
 ```
 
+### 1.7 DISCRETIZATION
 
+`离散化的基本含义`：对于一个值域特别大但是个数很少的数组进行操作，那么如果直接对数值进行操作就会导致所开新数组的范围过大（因为要顾及数的范围），但是离散化可以帮助我们将这些少量但较大的数映射到一个较小的范围内（最好的映射操作就是求解下标），进而方便操作。
+
+`离散化中的两个问题`：
+
+1. 原数组中可能有重复元素 => 去重 ==直接使用库函数==
+2. 实现映射 => 如何算出离散化后的值（也就是说如何求解该数的下标 ）  ==使用二分==
+
+```c++
+// template
+	vevtor<int> alls; // 存储待离散化的值的数组
+	sort(alls.begin(), alls.end()); // 将所有值进行排序
+	alls.erase(unique(alls.begin(), alls.end()), alls.end); // 去重的标准写法
+
+	// 二分法求出 某一个值对应的离散化值（说白了就是求出该数的下标）
+	int find(int x){
+    int l = 0, r = alls.size() - 1;
+    while(l < r){
+      int mid = l + r >> 1;
+      
+      if (alls[mid] >= x) r = mid;
+      else l = mid + 1;
+		}
+    
+    return r + 1; // 将 0 - (n - 1) 映射到 1 - n
+  }
+```
+
+#### [Interval Sum](https://www.acwing.com/problem/content/804/)
+
+> 一种解题方式就是前缀和，还是比较简单的，但是由于数据范围比较大，可能在直接加和的时候爆存，所以前缀和只适用于 $10^5$ 以内的数据范围。
+>
+> 从这个题目中很明显能看出来离散化题目的特点，就是范围很大，但是操作的数量很少。
+
+因此整体的思路就是先对原数组操作的所有下标进行离散化（排序 + 去重 + find），离散化后的下标结果就在 $10^5$ 量级上了，这样就可以对离散化后的数组采用前缀和进行求解了。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/9.
+    @comment Day 9
+*/
+#include<iostream>
+#include<vector>
+#include<algorithm>
+
+using namespace std;
+
+typedef pair<int, int> PII; // because their will be pairing input
+
+const int N = 3e5 + 10; // because there are max 3 indexes (x, l, r) and each of their number are in range (10^5)
+int n, m; // the two input number
+
+vector<int> alls; // the alls will note all raw indexes (x, l, r).
+vector<PII> add, query_bound; // the add will note (x and c), the bound will note (l and r).
+int a[N], s[N]; //  a 数组会记录下来原下标离散化后映射的结果, s 则是前缀和操作的结果
+
+// 二分法求解离散化后的值 (说白了就是找到相应值的下标)
+int find(int x) {
+    int l = 0, r = alls.size() - 1;
+    while (l < r) {
+        int mid = l + r >> 1;
+
+        if (alls[mid] >= x) r = mid;
+        else l = mid + 1;
+    }
+
+    return r + 1; // 返回下标 + 1
+}
+
+int main() {
+    cin >> n >> m;
+
+    // note the add array (in x add c)
+    while (n--) {
+        int x, c;
+        cin >> x >> c;
+
+        add.emplace_back(x, c); // note the index x and the value c;
+        alls.push_back(x); // note the add point
+    }
+
+    // note the bound array (from l to r)
+    while (m--) {
+        int l, r;
+        cin >> l >> r;
+
+        query_bound.emplace_back(l, r); // note the boundary (l, r)
+        // same as top 或许你会有疑问，为什么还需要对 query 中的数字进行保留呢，其实很简单，因为后续还需要对这些下标进行操作，所以必须也把它们离散化了
+        alls.push_back(l);
+        alls.push_back(r);
+    }
+
+    // do the discretization for all of index
+    sort(alls.begin(), alls.end()); // do the sorting
+    alls.erase(unique(alls.begin(), alls.end()), alls.end()); // make the raw indexes unique
+
+    // do the add to array a[]
+    for (auto item: add) {
+        int x = find(item.first); // x 是 item.first 这一个 index 对应的离散化后的下标 (from 10^9 to 10^5)
+        a[x] += item.second; // in a do the raw add operation.
+    }
+
+    // do the prefix sum of a 对于所有的下标都要进行一次操作，一定要注意这个地方的下标有了变化，所以是 <=
+    for (int i = 1; i <= alls.size(); i++) s[i] = s[i - 1] + a[i];
+
+    // do the query operation
+    for (auto item: query_bound) {
+        int l = find(item.first); // index 离散化后的结果
+        int r = find(item.second); // index 离散化后的结果
+
+        cout << s[r] - s[l - 1] << endl;
+    }
+
+    return 0;
+}
+```
+
+### 1.8 INTERVAL-CONSOLIDATION
+
+对多个区间中有交集的部分进行合并，进而将多个区间合并成为多个没有交集的区间。输入多个区间，输出合并后没有交集的区间个数。
+
+1. 一定要先针对每一个区间按照左边界点进行排序
+2. 然后从前往后进行扫描即可
+
+#### [Interval Consolidation](https://www.acwing.com/problem/content/805/)
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/9.
+    @comment Day 9
+*/
+
+#include<iostream>
+#include<vector>
+#include<algorithm>
+
+using namespace std;
+
+typedef pair<int, int> PII;
+
+void merge(vector<PII> &segs) {
+    vector<PII> res;
+
+    // 1. sort the segs
+    sort(segs.begin(), segs.end());
+
+    // 2. merge from left to right
+    int st = -2e9, ed = -2e9; // 因为所有元素的 boundary 是在 [-1e9, 1e9] 内，所以这样设计不会越界
+    for (auto seg: segs) {
+        if (seg.first > ed) {
+            // 如果某个区间的开头，大于循环的结尾了，那就说明到了一个新的区间了
+            if (st != -2e9) { // 避免将非第一个区间（初始的区间）的内容存入
+                res.emplace_back(st, ed); // 将上面分离开的区间存到 result 之中
+            }
+            st = seg.first, ed = seg.second; // 更新开头结尾
+        } else {
+            // 如果某个区间的开头，小于或等于结尾，那就说明有交集
+            ed = max(seg.second, ed); // 更新 ed 即可，这个地方必须是 max 因为涉及到大区间包含小区间的情况
+        }
+    }
+
+    // 3. 将最后一个 seg 放入其中
+    if (st != -2e9) res.emplace_back(st, ed);
+
+    segs = res;
+}
+
+int main() {
+    int n; // the number of intervals
+    cin >> n;
+
+    vector<PII> segs; // the raw input intervals
+
+    // input the raw intervals
+    while (n--) {
+        int l, r;
+        cin >> l >> r;
+        segs.emplace_back(l, r); // construct the interval
+    }
+
+    // merge the intervals
+    merge(segs);
+
+    // cout the number of intervals after merging
+    cout << segs.size();
+
+    return 0;
+}
+```
+
+## 2. DATA STRUCTURE
 
