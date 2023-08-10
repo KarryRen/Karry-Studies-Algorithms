@@ -51,8 +51,8 @@ void quick_sort(int q[], int l, int r){
     // 判别边界
     if (l >= r) return;
     
-    // 分成子问题, 分成子问题切记 0, N 和 N, 0 这两种情况
-    int x = q[l + r >> 1]; 
+    // 分成子问题, 分成子问题切忌 0, N 和 N, 0 这两种情况
+    int x = q[l + r >> 1]; // 注意此处是取了一个数字，而不是下标，这是和归并的本质区别
     // 如果后面以 j 为边界, 就需要下取整; 如果后面以 i 为边界就需要下取整。
     int i = l - 1;
     int j = r + 1;
@@ -131,7 +131,7 @@ int main() {
 
 归并排序（时间复杂度 $nlog_2n$），同样是`分治`的思想，主要步骤如下：
 
-```
+```c++
 设定数组 q 左右两边的下标为 l 和 r
 Step 1. 确定分界点 mid = ( l + r ) / 2 < 是下标 >
 Step 2. 递归排左右两边
@@ -176,6 +176,7 @@ void merge_sort(int q[], int l, int r){
 	while (i <= mid) tmp [ k ++ ] = q [ i ++ ];
 	while (j <= r) tmp [ k ++ ] = q [ j ++ ];
 	
+  // put the number back
 	for (i = l, j = 0; i <= r; i ++, j++) q[i] = tmp[j];
 }
 
@@ -230,7 +231,7 @@ LL inversion_number(int q[], int l, int r){
 			tmp[ k ++ ] = q[ i ++ ];
 		} else {
 			tmp[ k ++ ] = q[ j ++ ];
-			res += mid - i + 1;
+			res += mid - i + 1; // 如果此处出现一个逆序的数，根据数组有序性，那么逆序对的数量就要考虑到之前的所有数，得到这一个结果
 		}
 	}
 	while (i <= mid) tmp [ k++ ] = q[ i ++ ];
@@ -239,7 +240,6 @@ LL inversion_number(int q[], int l, int r){
 	for (i = l, j = 0; i <= r; i++, j++) q[i] = tmp[j];
 	
 	return res;
-	
 }
 
 int main(){
@@ -296,7 +296,7 @@ void dichotomy_branch1(){
     while(l < r){
         // -- set the mid
         int mid = l + r + 1 >> 1;
-        // -- check() must be true, so r = mid
+        // -- check() must be true, so l = mid
         if(check(mid)) l = mid; // here chech(mid) is q[mid] <= num;
         else r = mid - 1;
     }
@@ -1336,4 +1336,254 @@ int main() {
 ```
 
 ## 2. DATA STRUCTURE
+
+### 2.1 LINKED-LIST
+
+> 第一种基本的数据结构，链表。
+>
+> 1. 了解基本的构造原理
+>
+>    ```c++
+>    // 基本的实现方式就是 指针 + 结构体 => 动态链表
+>    struct Node{
+>      int val; // the value of Node
+>      Node * next; // the next node of Node
+>    }
+>    
+>    new Node(); // 
+>    ```
+>
+>    ==但是需要注意的是：由于存在 new 操作，所以速度十分慢，只适合于面试，不适合于算法题==。
+>
+> 2. 了解核心的操作思想
+>
+>    - 在头部插入
+>    - 在第 k 个插入的数后面，插入数
+>    - 在第 k 个插入的数后面，删除 数
+
+所以在算法题目中我们通常采用的方式是：`数组模拟链表`，数组模拟链表可以实现指针实现链表的所有的操作。 
+
+#### [Single Linked List](https://www.acwing.com/problem/content/828/)
+
+> 单链表最常用的点在于实现`临接表`，存储图和树，进而实现后续有关这些数据结构的操作。所谓单链表是指只能向后走的单项链表。
+
+```c++
+使用数组实现单链表的核心思想是开两个数组
+(value) e[N] => 某一个节点的值
+(next) ne[N] => 该节点指向的内容（尾节点的下标用 -1 表示）
+使用下标将 e 和 ne 关联起来
+```
+
+代码实现：
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/10.
+    @comment Day 10, 采用数组的方法实现单链表（数据结构第一课）
+*/
+
+#include<iostream>
+
+using namespace std;
+
+const int N = 1e5 + 10; // 数据范围定义
+
+/*
+ * 最为重要的四个定义
+ * 1. head 表示名义上的“头”，是表示链表起始点的下标是多少（因为经历过增删，所以链表头的下标不一定是 0）
+ *    head 的本质就是链表中逻辑上第一个节点的下标，如果没有节点，那就是 -1
+ *    一个比较好理解的方式是，不断的 insert_to_head 相当于不断建头，尽管下标一直往后走，但是后面构建的始终是逻辑上链表的头
+ *    所以更加具象的表示形式应该是 head 始终指向头部节点（在图上画成竖着的，而不是横着的）
+ * 2. e[N] 指每一个节点的值是多少（通过下标访问）
+ * 3. ne[N] 指每一个节点的下一指向的下标是多少（通过下标访问）
+ * 4. idx 表示插入点的下标 （不断向前推进）
+*/
+int head, e[N], ne[N], idx;
+
+// 链表初始化
+void init_single_list() {
+    head = -1; // 没有任何节点
+    idx = 0; // 初始可以插入点的下标为 0
+}
+
+// 构建头节点 函数（x 为头节点的值）
+void insert_to_head(int x) {
+    e[idx] = x; // 构建这一节点的值
+    ne[idx] = head; // 该节点指向原本的 head 节点
+    head = idx; // head 标记该节点，表示此节点为链表的头
+    idx++; // idx++ 操作的下标后移
+}
+
+// 将节点插入到【下标】为 k 的后面 函数（x 为该插入节点的值）
+void insert_node(int k, int x) {
+    e[idx] = x; // 始终是 idx 维护构建新的节点的下标
+    ne[idx] = ne[k]; // 新节点的 ne 为下标为 k 的节点的 ne
+    ne[k] = idx; // 下标为 k 的 ne 变为 idx
+    idx++;
+}
+
+// 删除【下标】为 k 的节点后的的节点
+void delete_node(int k) {
+    ne[k] = ne[ne[k]]; // 下标为 k 的节点指向其原本指向的节点的下一个节点
+    // idx 不需要做任何的操作，因为这是算法题目，不用考虑内存的维护
+}
+
+// 删除头节点
+void delete_head_node() {
+    head = ne[head]; // 类似于上述删除操作，只不过此处直接找到 head 即可，因为千万别忘了 head 标识的就是头节点的下标
+}
+
+int main() {
+    int m; // 操作次数
+    cin >> m;
+
+    // - 初始化
+    init_single_list();
+
+    // - 完成操作
+    while (m--) {
+        char op; // 操作符
+        int k, x; // 操作数
+
+        cin >> op; // 输入操作符
+
+        if (op == 'H') {
+            // 构建链表头
+            cin >> x; // 输入待插入的节点的值
+            insert_to_head(x);
+        } else if (op == 'I') {
+            // 在第 k 个插入的节点后，插入新的节点
+            cin >> k >> x; // k : 第 k 个插入的节点
+            insert_node(k - 1, x); // 第 k 个插入的节点的下标为 k - 1
+        } else if (op == 'D') {
+            // 删除第 k 个插入的节点后面的节点
+            cin >> k; // k : 第 k 个插入的节点
+            if (k == 0) delete_head_node(); // 如果 k = 0 表示删除头节点
+            else delete_node(k - 1); // k != 0 表示删除第 k 个插入的节点，其下标为 k - 1
+        } else {
+            cout << "wrong op !";
+        }
+    }
+
+    // - 输出链表
+    for (int i = head; i != -1; i = ne[i]) cout << e[i] << " ";
+    cout << endl;
+
+    return 0;
+}
+```
+
+#### [Double Linked List](https://www.acwing.com/problem/content/829/)
+
+> 双链表最常用的点在于`优化某些问题`
+
+```c++
+双链表较比单链表而言，无非是有了双向性，既有后指向又有前指向
+(value) e[N] => 某一节点的值
+(right point) r[N] => 下标为 i 的节点右边的节点下标
+(left point) l[N] => 下标为 i 的节点左边的节点下标
+```
+
+代码实现：
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/10.
+    @comment Day 10 采用数组实现双链表（数据结构第一课）
+*/
+
+
+#include<iostream>
+#include<string>
+
+using namespace std;
+
+const int N = 1e5 + 10; // 数据范围定义
+
+/*
+ * 最为重要的四个定义
+ * 0. head 因为过于繁琐，在双链表实现的时候我们就不再采用单链表的方式进行处理（包括 tail）
+ * 1. e[N] 指每一个节点的值是多少（通过下标访问）
+ * 2. r[N] 指每一个节点的右指向节点的下标是多少（通过下标访问）
+ * 3. l[N] 指每一个节点的左指向节点的下标是多少（通过下标访问）
+ * 4. idx 表示插入点的下标 （不断向前推进）
+*/
+int e[N], r[N], l[N], idx;
+
+// 初始化双链表
+void init_double_linked_list() {
+    // 和单链表初始化不同，双链表将下标 0 直接当作头节点， 下标 1 直接当作尾巴节点
+    r[0] = 1; // 下标 0 的右节点为 1
+    l[1] = 0; // 下标 1 的左节点为 0
+    idx = 2; // 由于 0 和 1 已经被用，所以 init 之后 idx = 2
+}
+
+// 后续的功能实现，其实归结到底只有两个，就是在【下标】k 的节点右边插入一个点，以及删除【下标】为 k 的节点
+// 1. 实现在【下标】 k 的节点右边插入一个节点
+void insert_right_node(int k, int x) {
+    e[idx] = x; // 构建一个新的节点
+    l[idx] = k; // 新的节点左边应该指向下标 k
+    r[idx] = r[k]; // 新的节点右边应该指向下标 k 的节点的右指向下标
+    l[r[idx]] = idx; // idx 的右边的左指向应该是 idx
+    r[l[idx]] = idx; // idx 的左边的右指向应该是 idx
+    idx++; // idx 右移动
+    // 当然上面还可以写成更为常规的写法
+    // l[r[k]] = idx;
+    // r[k] = idx;
+    // 如果这么写的话，那这个地方的顺序必须要保证，否则就会出错
+}
+
+// 2. 实现删除【下标】k 的节点
+void delete_node(int k) {
+    // 无非就是直接将 k 节点架空
+    r[l[k]] = r[k]; // k 左边的右边指向 k 的右边
+    l[r[k]] = l[k]; // k 右边的左边指向 k 的左边
+}
+
+int main() {
+    int m; // 操作的次数
+    cin >> m;
+
+    // - 初始化
+    init_double_linked_list();
+
+    // - 进行操作
+    while (m--) {
+        string op; // 操作符
+        int k, x; // 操作数
+
+        cin >> op;
+        if (op == "R") {
+            // 在双链表的最右边插入一个节点
+            cin >> x;
+            insert_right_node(l[1], x); // 无非就是在 【尾节点】的【左边点】的【右边】插入一个节点
+        } else if (op == "L") {
+            // 在双链表的最左边插入一个节点
+            cin >> x;
+            insert_right_node(0, x); // 无非就是在【头节点】的【右边】插入一个节点
+        } else if (op == "IR") {
+            // 在第 k 个插入的数右边插入一个数
+            cin >> k >> x;
+            insert_right_node(k + 1, x); // 一定要搞清楚第 k 个插入的数的下标是多少！(因为 idx 是从 2 开始的)
+        } else if (op == "IL") {
+            // 在第 k 个插入的数左边插入一个数
+            cin >> k >> x;
+            insert_right_node(l[k + 1], x); // 在第 k 个插入的数的左边的数插入
+        } else if (op == "D") {
+            // 删除第 k 个插入的数
+            cin >> k;
+            delete_node(k + 1); // 同样是搞清楚第 k 个插入的数的下标是多少
+        } else {
+            cout << "wrong op !";
+        }
+    }
+
+    // - 输出链表
+    for (int i = r[0]; i != 1; i = r[i]) cout << e[i] << " ";
+
+    return 0;
+}
+```
 
