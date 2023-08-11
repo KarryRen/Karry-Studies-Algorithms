@@ -1587,3 +1587,245 @@ int main() {
 }
 ```
 
+### 2.1 STACK
+
+> 昨天使用数组模拟了链表，今天需要用数组来模拟 stack 并进行操作 stack 就是弹夹
+>
+> 其基本操作如下：
+>
+> 1. push
+> 2. pop
+> 3. 输出栈顶元素
+> 4. 判断栈是否为空
+
+#### [Stack](https://www.acwing.com/problem/content/830/)
+
+使用数组进行模拟比较简单，因为不像链表需要对值和指向两个数组进行维护，此处只需要维护值这一个数组。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/11.
+    @comment Day 11 using array to make stack
+*/
+
+#include<iostream>
+
+using namespace std;
+
+const int N = 1e5 + 10; // the boundary of input m
+
+/*
+ * 对于栈来讲，只需要两个内容
+ * 1. stk[N] 中存储所放入的值
+ * 2. idx 记录栈顶的下标，idx 从 0 or 1 开始都可以，在这个地方为了保持和前面的链表一致，
+ *    我选择从 0 开始（这样的话栈顶元素就需要是 idx - 1 了）也就是说 idx 标识的是栈顶下标 + 1
+ */
+int stk[N], idx;
+
+// 初始化操作
+void init() {
+    idx = 0;
+}
+
+// push 操作
+void push(int x) {
+    stk[idx] = x;
+    idx++;
+}
+
+// pop 操作
+void pop() {
+    idx--;
+}
+
+// 查找栈顶元素操作
+int find_top() {
+    return stk[idx - 1];
+}
+
+// 判断栈是否为空
+void empty() {
+    if (idx <= 0) cout << "YES" << endl;
+    else cout << "NO" << endl;
+}
+
+int main() {
+    int n;
+    cin >> n;
+
+    string op; // 操作符
+    int x; // 操作
+
+    // - 初始化 stk
+    init();
+
+    // - 进行操作
+    while (n--) {
+        cin >> op;
+        if (op == "push") {
+            cin >> x;
+            push(x);
+        } else if (op == "pop") {
+            pop();
+        } else if (op == "empty") {
+            empty();
+        } else if (op == "query") {
+            cout << find_top() << endl;
+        } else {
+            cout << "wrong input" << endl;
+        }
+    }
+
+    return 0;
+}
+```
+
+#### [Expression Evaluation](https://www.acwing.com/problem/content/3305/)
+
+> 经典问题：二元运算符中缀表达式求解。解决这一问题，现在有两种基本的思路，其核心思想就是运算树的构建（非叶节点全部是运算符，叶节点全部是数字），进而使用递归进行求解。
+>
+> 1. 使用栈进行求解
+>
+>    ```c++
+>    中缀表达式和后缀表达式都可以用栈来模拟树实现递归过程。
+>    ```
+>
+> 2. 使用编译原理中的语法结构进行求解（更为简单）
+>
+>    ```c++
+>    其实这种求解的本质是递归求解，关键是构建树的过程
+>    ```
+>
+> 此处由于是学习 stack 的结构与使用技巧，所以我们采用 stack 进行求解。当然，我们也把语法求解的思路与代码写在了这。
+
+ 整体的思路如下：
+
+```c++
+eval(){
+  		· 从操作数栈中弹出两个操作数
+			· 从操作符栈中弹出一个操作符
+			· 两个操作数和一个操作符执行相应的计算
+			· 将结果压入操作数栈
+}
+
+input 是一个字符串（也就是说每一个数字其实本质是一个 string 中的 char ），表示中缀表达式。
+step 1 - 读入该字符串
+
+step 2 - 从左到右扫描该字符串
+	1. 如果遇到操作数（数字），将 char 转换成数字，然后将其压入操作数栈
+	2. 如果遇到操作符，则通过判断分情况处理
+		- 如果【操作符栈为空】或【栈顶元素为左括号】，则将该操作符压入操作符栈中
+		- 如果新的操作符的优先级大于操作符栈顶的操作符，那么就说明这棵子树还没有到顶，就要将该操作符压入到操作符栈中
+		- 如果新的操作符的优先级小于或等于操作符栈顶的操作符，并且符号栈栈顶元素不是左括号，那么就说明这棵子树到顶了就要：
+  		· eval()
+		  · 循环进行判断
+			· 直至将新的操作符压入操作符栈中
+		- 如果遇到左括号，直接压入栈中
+		- 如果遇到右括号，则执行以下操作直至遇到左括号
+			· eval()
+			· 弹出操作符栈顶的左括号
+			
+step 3 - 如果扫描完后操作符栈中仍然含有操作符，重复执行以下操作：
+			· eval()
+
+step 4 - 操作数栈栈顶的元素就是最终结果
+
+写代码时字符的优先级有一个 map 来表示，就比较好做
+```
+
+根据上述思路可以得到如下代码：
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/11.
+    @comment Day 11 表达式值的计算（采用栈进行求解）
+*/
+
+#include<iostream>
+#include<cstring> // 后续会用到字符串
+#include<stack> // 引入栈
+#include<algorithm>
+#include <unordered_map> // 存储运算符的优先级需要用 map 来表示
+
+using namespace std;
+
+/*
+ * 两个最为重要的结构
+ * 1. 操作数栈，存储所有的操作数
+ * 2. 操作符栈，存储所有的操作符
+ */
+stack<int> num;
+stack<char> op;
+
+// 满足条件时的计算操作
+void eval() {
+    // 取出操作数栈栈顶的两个操作数 （注意后进先出的顺序）
+    int b = num.top();
+    num.pop();
+    int a = num.top();
+    num.pop();
+    // 取出操作符栈栈顶一个操作符
+    char c = op.top();
+    op.pop();
+
+    int x; // 运算结果（根据不同的运算）
+    if (c == '+') x = a + b;
+    else if (c == '-') x = a - b;
+    else if (c == '*') x = a * b;
+    else x = a / b;
+    num.push(x); // 将运算结果压入 num 栈栈顶
+}
+
+int main() {
+    // 定义操作符的优先级
+    unordered_map<char, int> pr{{'+', 1},
+                                {'-', 1},
+                                {'*', 2},
+                                {'/', 2}};
+
+    // ---- step 1. 输入中缀表达式运算符 ---- //
+    string str;
+    cin >> str;
+
+    // ---- step 2. 从左到右进行扫描 ---- //
+    for (int i = 0; i < str.size(); i++) {
+        // - 对扫描到的字符进行判断
+        char c = str[i];
+
+        if (isdigit(c)) {
+            // case 1. 如果是数字那就需要不断的往后扫描，直至把数字全部扣出来
+            int x = 0, j = i;
+            while (j < str.size() && isdigit(str[j])) x = x * 10 + (str[j] - '0'), j++;
+            // 该数字扣完后需要进行两个操作
+            i = j - 1;   // 1. 扫描字符串的指针前移（移动到最后一个数字那）
+            num.push(x); // 2. 将该数字压到数字栈中
+        } else if (c == '(') {
+            // case 2. 如果是左括号就直接压入操作符栈中
+            op.push(c);
+        } else if (c == ')') {
+            // case 3. 如果是右括号，就需要进行计算操作，直至遇到左括号，然后将左括号弹出
+            while (op.top() != '(') eval();
+            op.pop();
+        } else {
+            // case 4. 正常的操作符 符合以下三个条件就进行计算操作，如果不符合就不做
+            // - op 栈不为空
+            // - op 的栈顶不是左括号
+            // - 操作符的优先级小于等于操作符栈顶操作符的优先级
+            while (op.size() && op.top() != '(' && pr[c] <= pr[op.top()]) eval();
+            // 将该操作符放入操作符栈中
+            op.push(c);
+        }
+    }
+
+    // ---- step 3. 扫描完毕后，进行收尾工作 ---- //
+    while (op.size()) eval();
+
+    // ---- step 4. 输出计算结果 ---- //
+    cout << num.top() << endl;
+
+    return 0;
+}
+```
+
