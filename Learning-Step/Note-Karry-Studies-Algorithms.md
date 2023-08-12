@@ -199,9 +199,9 @@ int main(){
 
 > 找到中点，将所有的逆序对情况分为三种：
 
-1. 逆序对在左半边 
-2. 逆序对在右半边
-3. 逆序对被中点分割
+1. 逆序对在左半边 （直接加上）
+2. 逆序对在右半边（直接加上）
+3. 逆序对被中点分割（两边排序与否是不影响的）
 
 ```c++
 #include<iostream>
@@ -231,7 +231,9 @@ LL inversion_number(int q[], int l, int r){
 			tmp[ k ++ ] = q[ i ++ ];
 		} else {
 			tmp[ k ++ ] = q[ j ++ ];
-			res += mid - i + 1; // 如果此处出现一个逆序的数，根据数组有序性，那么逆序对的数量就要考虑到之前的所有数，得到这一个结果
+			res += mid - i + 1; // 如果此处出现一个逆序的数，根据数组分区有序性（就是说前、后半区的数字都是有序的）
+      										// 因此如果不排序就得不到该结果，这就是采用归并排序的原因所在
+      										// 那么逆序对的数量就要考虑到前半区一旦出现一个，其后面的数字也都大于后半区的数字，进而得到这一个结果
 		}
 	}
 	while (i <= mid) tmp [ k++ ] = q[ i ++ ];
@@ -1149,7 +1151,7 @@ int main() {
 `离散化中的两个问题`：
 
 1. 原数组中可能有重复元素 => 去重 ==直接使用库函数==
-2. 实现映射 => 如何算出离散化后的值（也就是说如何求解该数的下标 ）  ==使用二分==
+2. 实现映射 => 如何算出离散化后的值（也就是说如何求解出该数的目标下标 ）  ==使用二分==
 
 ```c++
 // template
@@ -1157,7 +1159,7 @@ int main() {
 	sort(alls.begin(), alls.end()); // 将所有值进行排序
 	alls.erase(unique(alls.begin(), alls.end()), alls.end); // 去重的标准写法
 
-	// 二分法求出 某一个值对应的离散化值（说白了就是求出该数的下标）
+	// 二分法求出某一个值对应的离散化值（说白了就是求出该数的下标）
 	int find(int x){
     int l = 0, r = alls.size() - 1;
     while(l < r){
@@ -1200,7 +1202,7 @@ vector<int> alls; // the alls will note all raw indexes (x, l, r).
 vector<PII> add, query_bound; // the add will note (x and c), the bound will note (l and r).
 int a[N], s[N]; //  a 数组会记录下来原下标离散化后映射的结果, s 则是前缀和操作的结果
 
-// 二分法求解离散化后的值 (说白了就是找到相应值的下标)
+// 二分法求解离散化后的值 (说白了就是找到相应值的下标，x 原本表示较大的下标范围，后续会被离散化到所操作次数范围内)
 int find(int x) {
     int l = 0, r = alls.size() - 1;
     while (l < r) {
@@ -1222,7 +1224,7 @@ int main() {
         cin >> x >> c;
 
         add.emplace_back(x, c); // note the index x and the value c;
-        alls.push_back(x); // note the add point
+        alls.push_back(x); // 把原下标进行保存
     }
 
     // note the bound array (from l to r)
@@ -1231,19 +1233,20 @@ int main() {
         cin >> l >> r;
 
         query_bound.emplace_back(l, r); // note the boundary (l, r)
-        // same as top 或许你会有疑问，为什么还需要对 query 中的数字进行保留呢，其实很简单，因为后续还需要对这些下标进行操作，所以必须也把它们离散化了
+        // same as top 或许你会有疑问，为什么还需要对 query 中的数字进行保留呢，
+ 	      // 其实很简单，因为后续还需要对这些下标进行操作，所以必须也把它们离散化了，才能在目标数组中找到
         alls.push_back(l);
         alls.push_back(r);
     }
 
     // do the discretization for all of index
-    sort(alls.begin(), alls.end()); // do the sorting
-    alls.erase(unique(alls.begin(), alls.end()), alls.end()); // make the raw indexes unique
+    sort(alls.begin(), alls.end()); // 对原本的下标集进行排序
+    alls.erase(unique(alls.begin(), alls.end()), alls.end()); // 对原本的下标集进行 unique 处理
 
     // do the add to array a[]
     for (auto item: add) {
         int x = find(item.first); // x 是 item.first 这一个 index 对应的离散化后的下标 (from 10^9 to 10^5)
-        a[x] += item.second; // in a do the raw add operation.
+        a[x] += item.second; // in a do the raw add operation. （在离散化后的数组中进行加和映射）
     }
 
     // do the prefix sum of a 对于所有的下标都要进行一次操作，一定要注意这个地方的下标有了变化，所以是 <=
@@ -1350,7 +1353,7 @@ int main() {
 >      Node * next; // the next node of Node
 >    }
 >    
->    new Node(); // 
+>    new Node(); 
 >    ```
 >
 >    ==但是需要注意的是：由于存在 new 操作，所以速度十分慢，只适合于面试，不适合于算法题==。
@@ -1589,7 +1592,7 @@ int main() {
 
 ### 2.1 STACK
 
-> 昨天使用数组模拟了链表，今天需要用数组来模拟 stack 并进行操作 stack 就是弹夹
+> 第二种数据结构，栈。stack 就是弹夹（后进先出）
 >
 > 其基本操作如下：
 >
@@ -1618,8 +1621,8 @@ const int N = 1e5 + 10; // the boundary of input m
 /*
  * 对于栈来讲，只需要两个内容
  * 1. stk[N] 中存储所放入的值
- * 2. idx 记录栈顶的下标，idx 从 0 or 1 开始都可以，在这个地方为了保持和前面的链表一致，
- *    我选择从 0 开始（这样的话栈顶元素就需要是 idx - 1 了）也就是说 idx 标识的是栈顶下标 + 1
+ * 2. idx 记录栈顶的下标，idx 从 0 or -1 开始都可以，在这个地方为了保持和前面的链表一致，
+ *    我选择从 0 开始（这样的话栈顶元素就需要是 idx - 1 了）也就是说 idx 标识的是栈顶（下标 + 1）
  */
 int stk[N], idx;
 
@@ -1824,6 +1827,97 @@ int main() {
 
     // ---- step 4. 输出计算结果 ---- //
     cout << num.top() << endl;
+
+    return 0;
+}
+```
+
+### 2.2 QUEUE
+
+> 第三种数据结构，队列。queue，就是打饭窗口的队（先进先出）。
+>
+> 其本质和栈是一样的，只不过需要两个指针来进行维护。
+
+#### [Queue](https://www.acwing.com/problem/content/831/)
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/12.
+    @comment Day 12 using array to do the queue
+*/
+
+#include<iostream>
+
+using namespace std;
+
+const int N = 1e5 + 10;
+
+/*
+ * 对于队列而言需要维护三个内容
+ * 1. q[N] 用于存储队列中的值
+ * 2. hh 表示头指针，表示队头（可以输出的地方）初始化为 0
+ * 3. tt 表示尾指针，表示队尾（可以输入的地方）初始化为 0 （当然也可以初始化为 -1，那样访问队尾就不用减 1 了）
+ *    但是为了和之前的链表以及栈保持一致，我在此处还是将 tt 初始化为了 0
+ */
+
+int q[N], hh, tt;
+
+// 初始化函数
+void init() {
+    hh = 0;
+    tt = 0;
+}
+
+// 向队尾插入一个数
+void push(int x) {
+    q[tt] = x; // 向队尾插入该数
+    tt++; // 队尾指针后移动，因此可以看到 tt 的值是【队尾元素下标 + 1】，而不是队尾元素下标
+}
+
+// 从队头弹出一个数
+void pop() {
+    hh++; // 头指针只需要向后移动一个即可，因此可以看到 hh 的值就是队头元素的下标
+    // 这个地方和链表一样不需要考虑空间的维护,实际上只有 stack 能充分利用数组的空间，只要有两个指针，就都不可能充分利用。
+}
+
+// 判断是否为空
+void empty() {
+    // 这个地方是否能取到等号也是和指针的初始化有关，一定要注意判别
+    if (hh < tt) cout << "NO" << endl;
+    else cout << "YES" << endl;
+}
+
+// 查询队头元素
+void find_head() {
+    cout << q[hh] << endl;
+}
+
+int main() {
+    int m;
+    cin >> m;
+
+    // - 进行初始化
+    init();
+
+    // - 进行详细的操作
+    string op; // 定义操作符
+    int x; // 定义操作数
+    while (m--) {
+        cin >> op;
+        if (op == "push") {
+            cin >> x;
+            push(x);
+        } else if (op == "pop") {
+            pop();
+        } else if (op == "query") {
+            find_head();
+        } else if (op == "empty") {
+            empty();
+        } else {
+            cout << "wrong input !" << endl;
+        }
+    }
 
     return 0;
 }
