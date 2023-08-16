@@ -1,7 +1,7 @@
 /*
     @author Karry 
     @date on 2023/8/14.
-    @comment Day 14 kmv for string
+    @comment Day 14 kmv for string 如果我企图让 next[0] = 0，并且后续不做区分的话，就很难做，下面的代码就陷入了死局
 */
 
 #include<iostream>
@@ -38,7 +38,8 @@ int main() {
         cout << kmv_next[i] << " ";
         // 母串指针后移一位
     }
-    cout << endl;
+
+
     // step 2 使用 kmv_next 完成 kmv
     for (int i = 0, j = 0; i < m; i++) { // i 从 0 开始遍历
         while (j != 0 && str_p[i] != str_s[j]) { // 不匹配就回退

@@ -1,7 +1,7 @@
 /*
     @author Karry 
     @date on 2023/8/15.
-    @comment 下标从 1 开始记住下面的做法
+    @comment 下标从 1 开始记住下面的做法， next[0] = 0; next[1] = 1 开头和后续访问开头是有区分的
 */
 
 #include <iostream>
