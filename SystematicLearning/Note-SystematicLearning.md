@@ -1150,7 +1150,7 @@ int main() {
 
 ### 1.7 DISCRETIZATION
 
-==离散化的基本含义==：对于一个值域特别大但是个数很少的数组进行操作，那么如果直接对数值进行操作就会导致所开新数组的范围过大（因为要顾及数的范围），但是离散化可以帮助我们将这些少量但较大的数映射到一个较小的范围内（最好的映射操作就是求解下标），进而方便操作。
+==离散化的基本含义==：对于一个范围特别广（下标特别大）但是个数很少的数组进行操作，那么如果直接对数值进行操作就会导致所开新数组的范围过大（因为要顾及数的下标范围），但是离散化可以帮助我们将这些少量但下标范围很大的数映射到一个较小的范围内（最好的映射操作就是求解下标），进而方便操作。
 
 ==离散化中的两个问题==：
 
@@ -1159,11 +1159,11 @@ int main() {
 
 ```c++
 // template
-	vevtor<int> alls; // 存储待离散化的值的数组
-	sort(alls.begin(), alls.end()); // 将所有值进行排序
-	alls.erase(unique(alls.begin(), alls.end()), alls.end); // 去重的标准写法
+	vevtor<int> alls; // 存储待离散化的值下标的数组
+	sort(alls.begin(), alls.end()); // 将所有原下标进行排序
+	alls.erase(unique(alls.begin(), alls.end()), alls.end); // 去除原下标中的重复值的标准写法
 
-	// 二分法求出某一个值对应的离散化值（说白了就是求出该数的下标）
+	// 二分法求出某一个原下标对应的离散化后的下标（说白了就是实现原下标到目标下标的映射）
 	int find(int x){
     int l = 0, r = alls.size() - 1;
     while(l < r){
@@ -1206,7 +1206,7 @@ vector<int> alls; // the alls will note all raw indexes (x, l, r).
 vector<PII> add, query_bound; // the add will note (x and c), the bound will note (l and r).
 int a[N], s[N]; //  a 数组会记录下来原下标离散化后映射的结果, s 则是前缀和操作的结果
 
-// 二分法求解离散化后的值 (说白了就是找到相应值的下标，x 原本表示较大的下标范围，后续会被离散化到所操作次数范围内)
+// 二分法求解离散化后的值 (说白了就是找到原本下标的离散化后的下标，x 原本表示较大的下标范围，后续会被离散化到所操作次数范围内)
 int find(int x) {
     int l = 0, r = alls.size() - 1;
     while (l < r) {
@@ -1425,7 +1425,7 @@ void init_single_list() {
 void insert_to_head(int x) {
     e[idx] = x; // 构建这一节点的值
     ne[idx] = head; // 该节点指向原本的 head 节点
-    head = idx; // head 标记该节点，表示此节点为链表的头
+    head = idx; // head 标记该节点，表示此节点为链表的头，以方便后续地访问
     idx++; // idx++ 操作的下标后移
 }
 
@@ -3043,3 +3043,165 @@ int main() {
 }
 ```
 
+### 2.8 HASH 
+
+> 第八种数据结构：哈希表。
+>
+> 首先我们要理解一下哈希表的用处，实现数值下标范围的压缩（有点类似于离散化，方式是排序 + 去重 + 二分查找），比如将 $0 \sim 10^9$ 的范围映射到 $0 \sim 10^5$ 上。更具体一点在 $-10^9 \sim 10^9$ 范围的下标下进行 $10^5$ 以内个操作，也就是说在很大的下标范围内，只有很少部分的下标被访问过（有意义的点很少）。
+>
+> 面对上述的问题，我们希望存在一个函数 $hash(x)$ 能将 $-10^9 \sim 10^9$ 这一范围映射到 $0 \sim 10^5$ 上，将这个函数称作哈希函数。至此我们可以明显看出离散化是一种较为特殊的哈希函数（因为其要求操作下标必须保序而且无重复），现在我们想要设定更为一般的哈希方式，常用的函数就是取余：$hash(x) = x \ mod\ 10^5$ （==明显会有冲突==<两个不同的数字映射到同一个数上>），==注意在这个地方取模最好模上大于边界的第一个质数，而且尽可能离2的次方远一些==。这种冲突是必须要进行处理的，根据处理方式的不同就可以将哈希表分成：
+>
+> - 拉链法：处理冲突的方式是串糖葫芦，一个坑可以串很多个人。
+>
+>   ```c++
+>   step 1. 开一个 10^5 大小的数组 h[N] 存储 hash(x)
+>   step 2. 开始往数组里面存数
+>   	- hash(11) = 3; 那么就在数组 h 中下标为 3 处开一个拉链头放 11
+>   	- hash(3) = 3; 在数组 h 中下标为 3 处继续往拉链头上插入数字 3
+>   	- 顺次操作
+>   step 3. 最终就在某些下标处形成了长长的“拉链”（拉链的结构是单链表）
+>   step 4. 想要查询某个数字 y 先求 hash(y) 然后在以 hash(y) 为头的单链表中从头依次访问寻找 y
+>   ```
+>
+> - 开放寻址法：处理冲突的方式是找厕所，顺次寻找，直至找到！
+>
+>   ```c++
+>   step 1. 开一个 2 到 3 倍于 10^5 大小的数组 h[N] 存储每一个 hash(x)
+>   step 2. 计算 hash 值，开始往数组中存数字
+>   	- hash(11) = 3; 没有冲突，h[3] = 11
+>   	- hash(3) = 3; 存在冲突了，那么就从 3 开始往后找，直至找到 h[4] 是空的，就放进去
+>   step 3. 这样最终就形成了一个一维的 hash 表
+>   step 4. 想要查询某个数字 y 先求 hash(y) 然后从 hash(y) 往后寻找，直至找到不为空且值为 y 的地方。
+>   ```
+
+#### [Hash](https://www.acwing.com/problem/content/842/)
+
+具体实现上来看代码实现：
+
+1. ==拉链法==：核心是单链表的维护，直接将 h[N] 作为每一个链表的头，初始化为 -1，然后每次都往头部插入。这也就是说，虽然我们仍然只使用一个一维数组来维护链表，但是其本质有多个头，逻辑上是多个链表。要想访问哪个链表就必须通过某个头依次查询。
+
+   ```c++
+   /*
+       @author Karry 
+       @date on 2023/8/20.
+       @comment Day 20 实现散列表（采用 拉链法）
+   */
+   
+   #include<iostream>
+   #include<cstring>
+   
+   using namespace std;
+   
+   const int N = 100003; // 大于 1e5 的第一个质数
+   
+   int h[N]; // hash 表数组 （每个元素存储的是链表的表头）
+   int e[N], ne[N], idx; // 单个数组表示多维度链表
+   
+   // 向 hash 表中插入元素（模仿在单链表表头插入）
+   void insert(int x) {
+       // 将数映射到 0 ~ 10^5 上，之所以不能直接取 mod 是因为要防止负数出现
+       int k = (x % N + N) % N;
+   
+       // 将数 x 进行插入链表头中
+       e[idx] = x;
+       ne[idx] = h[k]; // h[k] 标识的是 head
+       h[k] = idx; // head 指向头 idx
+       idx++; // idx 后移动
+   }
+   
+   // 在 hash 表中找到数 x
+   bool find(int x) {
+       // 先求出来映射值
+       int k = (x % N + N) % N;
+   
+       // 从头开始找
+       for (int i = h[k]; i != -1; i = ne[i])
+           if (e[i] == x) return true;
+       return false;
+   }
+   
+   int main() {
+       int n;
+       cin >> n;
+   
+       // 初始化哈希表。因为哈希表的每一个元素代表的是链表表头，所以初始化为 -1 就很自然了！
+       memset(h, -1, sizeof(h));
+   
+       string op; // 操作符
+       int x; // 操作数
+       while (n--) {
+           cin >> op >> x;
+           if (op == "I") insert(x); // 插入头部的操作
+           else if (op == "Q") {
+               if (find(x)) cout << "Yes" << endl;
+               else cout << "No" << endl;
+           } else cout << "Wrong Input" << endl;
+       }
+   
+       return 0;
+   }
+   ```
+
+2. ==开放寻址法==：只需要维护一个数组，而且核心只用 care 一个函数 find 如果数在 hash 表中就返回下标，如果不在就返回应该存储的下标。
+
+   ```c++
+   /*
+       @author Karry 
+       @date on 2023/8/20.
+       @comment Day 20 开放寻址法实现 hash 表
+   */
+   
+   #include<iostream>
+   #include<cstring>
+   
+   using namespace std;
+   
+   const int N = 200003; // 大于 2 * 1e5 的第一个质数
+   const int null = 0X3f3f3f3f; // 用一个不可能出现的数标识 hash 表的坑是空的
+   
+   int h[N]; // hash 表数组
+   
+   /*
+    * 在 hash 表中找到数 x
+    * 如果 x 存在就返回 x 的下标
+    * 如果 x 不存在就返回 x 应该存储的下标
+    */
+   bool find(int x) {
+       // 先求出来映射值
+       int k = (x % N + N) % N;
+   
+       // 从头开始在单链表中进行寻找
+       while (h[k] != null && h[k] != x) {
+           k++; // 如果不是空而且还不相等，说明没有找到，那就继续往后面找
+           if (k == N) k = 0; // 如果找到了尾部，就回到开头
+           // 直到找到目的下标
+       }
+   
+       return k;
+   }
+   
+   int main() {
+       int n;
+       cin >> n;
+   
+       // 初始化哈希表，让每一个坑都为空
+       // memset这个函数是按字节来赋值的，int 有 4 个字节，所以把每个字节都赋值成 0x3f 以后就是 0x3f3f3f3f
+       memset(h, 0x3f, sizeof(h));
+   
+       string op; // 操作符
+       int x; // 操作数
+       while (n--) {
+           cin >> op >> x;
+           int k = find(x);
+           if (op == "I") h[k] = x; // 插入操作：如果之前没有插入过 x 那么直接在应该插入的位置赋值即可；如果之前已经插入过 x 了，再赋值一遍也无所谓
+           else if (op == "Q") {
+               if (h[k] != null) cout << "Yes" << endl; // 如果存在返回的就应该是之前插入的位置
+               else cout << "No" << endl; // 否则该插入的位置的数值一定是空
+           } else cout << "Wrong Input" << endl;
+       }
+   
+       return 0;
+   }
+   ```
+
+   
