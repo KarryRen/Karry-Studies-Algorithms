@@ -13,7 +13,7 @@ int n;
 int path[N]; // 存储路径的数组
 int st[N]; // 存储 0 ~ n 之间每个数字状态的数组，被用着（在路径里面）就是 true 否则就是 false
 
-// dfs function 从 u 开始寻找
+// dfs function 从 u 开始寻找 （u 就是深度）
 void dfs(int u) {
     if (u == n) { // u = n; 说明找到树的最后一级了，也就说明路径到头了
         for (int i = 0; i < n; i++) cout << path[i] << " "; // 输出路径结果
@@ -21,7 +21,7 @@ void dfs(int u) {
         return; // 返回上一级
     }
 
-    for (int i = 1; i <= n; i++) // i 指针从前往后走直到遍历完整，可以保证前后顺序
+    for (int i = 1; i <= n; i++) // i 指针从前往后走直到遍历完整，可以保证前后顺序，数字从 1 开始所以 i 从 1 开始
         if (!st[i]) {
             path[u] = i; // 将数字 i 放到路径中
             st[i] = true; // 数字 i 已经被用过了
@@ -38,4 +38,3 @@ int main() {
     dfs(0); // 从 0 开始找 （树根部）
     return 0;
 }
-
