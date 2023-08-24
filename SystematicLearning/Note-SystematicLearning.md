@@ -3355,7 +3355,7 @@ int main() {
 
 ### 3.1 DFS
 
-dfs 俗称为暴力搜索，关键是如何按照顺序进行输出。深度搜索的含义不言而喻，搜索过程可以用树的形式来呈现，就是一遍遍撞南墙（走到终点）后回溯到可以继续往下走的位置，和递归的本质是一样的（完全没有必要区分概念）。
+dfs（深搜）俗称为暴力搜索，关键是如何按照顺序进行输出。深度搜索的含义不言而喻，搜索过程可以用树的形式来呈现，就是一遍遍撞南墙（走到终点）后**回溯**到可以继续往下走的位置，和递归的本质是一样的（完全没有必要区分概念）。
 
 #### [Ordinal Number](https://www.acwing.com/problem/content/844/)
 
@@ -3490,3 +3490,141 @@ int main() {
 ```
 
 ==思路二==：走到最初的起点，把每一行只能存一个皇后这个先验知识都舍弃掉，直接一个格子一个格子的去进行搜索，这样就需要每个格子进行一次判断，这样就还需要加上行判断，同时模拟好格子移动的过程（之前只需要模拟好列向右移动的过程，现在还要做好行）。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/23.
+    @comment Day 23. n 皇后问题：全排列的过程中，进行条件检验（对角线判断）按照格子搜索，每一个格子往后移动
+*/
+
+#include<iostream>
+
+using namespace std;
+
+const int N = 20; // 因为对角线是行数的 2n - 1 倍，所以开 2 倍肯定够了
+int n;
+char queen[N][N]; // n rows and n cols.
+int row[N], col[N], dg[N], ndg[N]; // 标识行、列、正对角线和反对角线是否被用过了
+
+// 和基本的 dfs 如出一辙，此处 (x, y, n_q) 标识期盼的第 x 行, y 列, 皇后的数量为 n_q
+void dfs_n_queen(int x, int y, int n_q) {
+
+    if (y == n) y = 0, x++; // 列到结尾了，直接转移到行头
+
+    if (x == n) { // 到了最后一行
+        if (n_q == n) { // 并且皇后的数量为 n 了，就把皇后输出出来
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) cout << queen[i][j];
+                cout << endl;
+            }
+            cout << endl;
+        }
+        return;
+    }
+
+    // 在该格子上不放皇后
+    dfs_n_queen(x, y + 1, n_q);
+
+    // 在该格子上放皇后
+    if (!row[x] && !col[y] && !dg[x + y] && !ndg[x - y + n]) { // 符合规则
+        queen[x][y] = 'Q'; // 全排列赋值
+        row[x] = col[y] = dg[x + y] = ndg[x - y + n] = true; // 标识被用过了
+        dfs_n_queen(x, y + 1, n_q + 1); // 到达下一个格子，且皇后数量 + 1
+        row[x] = col[y] = dg[x + y] = ndg[x - y + n] = false; // 回溯清空所有的状态
+        queen[x][y] = '.'; // 回溯清空第 i 列的皇后
+    }
+}
+
+
+int main() {
+    cin >> n;
+
+    // 初始化 queen 数组
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            queen[i][j] = '.';
+
+    // dfs 条件性全排列 解决 n_queen （从第 0 行开始走）
+    dfs_n_queen(0, 0, 0);
+
+    return 0;
+}
+```
+
+### 3.2 BFS
+
+bfs（宽搜）常用于搜索最短路线（最短路问题是十分常见的），一层层地向下走（此处层的概念是由路径的权重来表现的，一般情况下 bfs 要求权重必须是相等的），不断前进，每走到一个区域（可能有很多个点），就用队列将其存起来，每次把队列中所有的可能点进行遍历。如果用深搜的话，虽然可以搜索到终点，但是不能保证最短。
+
+#### [WalkMaze](https://www.acwing.com/problem/content/846/)
+
+核心是如何记住当前的立足点，以及如何向后继续拓展延伸，同时存储下来该点到起点的距离。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/24.
+    @comment Day 24 BFS 算法实践 => 走迷宫 ｜ 核心在于用队列存储所有的可能点，每次都进行逐个访问，寻找最急的后续点
+    @note 这一份是用数组模拟队列
+*/
+
+#include<iostream>
+#include<cstring>
+
+using namespace std;
+
+const int N = 110; // 因为迷宫的宽度最大为 100，多开 10 个是足够的
+typedef pair<int, int> PLL; // 记录坐标的元素
+
+int n, m; // 行高，列宽
+
+// 表示迷宫的两个重要数组
+int maze[N][N]; // 迷宫数组
+int maze_st[N][N]; // 表示迷宫每个点状态（到起点的距离）的数组
+
+// 数组模拟的队列：队列中的元素是点，所以需要设置点坐标的队列
+PLL q[N * N];
+int hh, tt;
+
+// bfs 搜索，从 [0, 0] 点开始
+int bfs() {
+    hh = 0, tt = 0; // 初始化队列为空
+    memset(maze_st, -1, sizeof(maze_st)); // 初始化迷宫所有点的初始状态，刚开始所有点到起点的距离都是 -1
+
+    // step 1. 从起点开始搜索
+    q[tt++] = {0, 0}; // 起点入队列
+    maze_st[0][0] = 0; // 迷宫起点的状态更新
+
+    // step 2. 开始逐层搜索
+    int dx[4] = {-1, 1, 0, 0}, dy[4] = {0, 0, -1, 1}; // 两个一维数组组合称四个方向，0-上[-1, 0], 1-下[1, 0], 2-左[0, -1], 3-右[0, 1];
+    while (hh < tt) { // 只要队列不为空，就说明新的区域中有点还没有往下走
+        auto p = q[hh++]; // 把队头元素（立足点）取出来
+
+        for (int i = 0; i < 4; i++) { // 走遍四个方向
+            int x = p.first + dx[i], y = p.second + dy[i]; // 从立足点往四个方向走的坐标点 (x, y)
+
+            // (x, y) 必须在迷宫范围内，该点还不是墙，且该点之前没有被访问过
+            if (x >= 0 && x < n && y >= 0 && y < m && maze[x][y] == 0 && maze_st[x][y] == -1) {
+                maze_st[x][y] = maze_st[p.first][p.second] + 1; // 修改该点的状态：该点到起点的距离 = 立足点到起点的距离 + 1
+                q[tt++] = {x, y}; // 该点入队尾
+            }
+        }
+    }
+
+    return maze_st[n - 1][m - 1]; // 终点到起点的距离
+}
+
+int main() {
+    cin >> n >> m;
+
+    // 输入迷宫
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            cin >> maze[i][j];
+
+    // 进行 bfs 搜索
+    cout << bfs() << endl;
+
+    return 0;
+}
+```
