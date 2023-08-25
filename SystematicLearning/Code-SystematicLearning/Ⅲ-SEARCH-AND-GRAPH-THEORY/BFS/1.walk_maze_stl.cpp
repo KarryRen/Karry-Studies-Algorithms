@@ -18,18 +18,18 @@ int n, m; // 行高，列宽
 
 // 表示迷宫的两个重要数组
 int maze[N][N]; // 迷宫数组
-int maze_st[N][N]; // 表示迷宫每个点状态（到起点的距离）的数组
+int maze_dist[N][N]; // 表示迷宫每个点状态（到起点的距离）的数组
 
 // stl 中的队列：队列中的元素是点，所以需要设置点坐标的队列
 queue<PLL> q;
 
 // bfs 搜索，从 [0, 0] 点开始
 int bfs() {
-    memset(maze_st, -1, sizeof(maze_st)); // 初始化迷宫所有点的初始状态，刚开始所有点到起点的距离都是 -1
+    memset(maze_dist, -1, sizeof(maze_dist)); // 初始化迷宫所有点的初始状态，刚开始所有点到起点的距离都是 -1
 
     // step 1. 从起点开始搜索
     q.push({0, 0}); // 起点入队列
-    maze_st[0][0] = 0; // 迷宫起点的状态更新
+    maze_dist[0][0] = 0; // 迷宫起点的状态更新
 
     // step 2. 开始逐层搜索
     int dx[4] = {-1, 1, 0, 0}, dy[4] = {0, 0, -1, 1}; // 两个一维数组组合称四个方向，0-上[-1, 0], 1-下[1, 0], 2-左[0, -1], 3-右[0, 1];
@@ -41,14 +41,14 @@ int bfs() {
             int x = p.first + dx[i], y = p.second + dy[i]; // 从立足点往四个方向走的坐标点 (x, y)
 
             // (x, y) 必须在迷宫范围内，该点还不是墙，且该点之前没有被访问过
-            if (x >= 0 && x < n && y >= 0 && y < m && maze[x][y] == 0 && maze_st[x][y] == -1) {
-                maze_st[x][y] = maze_st[p.first][p.second] + 1; // 修改该点的状态：该点到起点的距离 = 立足点到起点的距离 + 1
+            if (x >= 0 && x < n && y >= 0 && y < m && maze[x][y] == 0 && maze_dist[x][y] == -1) {
+                maze_dist[x][y] = maze_dist[p.first][p.second] + 1; // 修改该点的状态：该点到起点的距离 = 立足点到起点的距离 + 1
                 q.push({x, y}); // 该点入队尾
             }
         }
     }
 
-    return maze_st[n - 1][m - 1]; // 终点到起点的距离
+    return maze_dist[n - 1][m - 1]; // 终点到起点的距离
 }
 
 int main() {
