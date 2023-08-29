@@ -4135,3 +4135,78 @@ int main() {
   }
   ```
 
+
+
+==后续几个算法都是为求解最短路问题服务，这是一张整体的框架图。==
+
+<img src="/Users/karry/Pictures/NoteImages/image-20230829232923880.png" alt="image-20230829232923880" style="zoom:50%;" />
+
+### 3.3 DIJKSTRA
+
+求解有向图中最短路径的算法。对于每条边等权重，也就是变长都为 1 的有向图，我们当然可以借助 bfs 进行求解（对节点进行遍历执行 [Hierarchy of Points] 中的操作，找到两两节点之间的最小距离）。但是如果给有向图中的边进行加权，每条边所表示的距离存在区别也就是变长不同时，就很难用 bfs 直接进行求解了，转而借助 dijkstra 这个工具。
+
+#### [Simplicial Dijkstra](https://www.acwing.com/problem/content/851/)
+
+朴素版的 Dijkstra 算法，底层原理是贪心。核心维护着点 i 到起点的==最短==距离 dist[i]，同时维护已经确定是最短距离的点集 s[n] ，思路如下：
+
+- **<u>*Step 1.*</u>** 初始化：dist[0] = 0; dist [!0] = 正无穷
+- **<u>*Step 2.*</u>** 对所有点进行遍历 （这个过程总共进行 n 次）【下面两步对全图进行不断渗透】
+  - 每次都先判断点 t 是否在 s[n] 中，如果不在就把遍历完成后 dist 最小点放入 s 中 （只会放入一个点）
+  - 因为点 t 已经放入 s 中，所以用其帮助更新 t 点所能到达点的 dist
+
+Dijkstra 算法面向的一般是比较稠密的图，所以采用邻接矩阵来存。此处我们还不用考虑负数边长，对于最短路径而言，1）根本不需要 care自环，不用对其进行存储；2）重边也只需要存储最短边。因此这样构建邻接矩阵就比较简单。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/29.
+    @comment Day 29. 朴素的 Dijkstra 算法，时间复杂度 O(n^2)
+*/
+
+#include <cstring>
+#include <iostream>
+
+using namespace std;
+
+const int N = 510;
+
+int n, m;
+int g[N][N];
+int dist[N];
+bool st[N];
+
+int dijkstra() {
+    memset(dist, 0x3f, sizeof dist);
+    dist[1] = 0;
+
+    for (int i = 0; i < n - 1; i++) {
+        int t = -1;
+        for (int j = 1; j <= n; j++)
+            if (!st[j] && (t == -1 || dist[t] > dist[j]))
+                t = j;
+
+        for (int j = 1; j <= n; j++)
+            dist[j] = min(dist[j], dist[t] + g[t][j]);
+
+        st[t] = true;
+    }
+
+    if (dist[n] == 0x3f3f3f3f) return -1;
+    return dist[n];
+}
+
+int main() {
+    cin >> n >> m;
+
+    memset(g, 0x3f, sizeof g);
+    while (m--) {
+        int a, b, c;
+        cin >> a >> b >> c;
+        g[a][b] = min(g[a][b], c);
+    }
+
+    cout << dijkstra();
+
+    return 0;
+}
+```
