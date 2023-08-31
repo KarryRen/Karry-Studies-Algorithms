@@ -4141,9 +4141,9 @@ int main() {
 
 <img src="/Users/karry/Pictures/NoteImages/image-20230829232923880.png" alt="image-20230829232923880" style="zoom:50%;" />
 
-### 3.3 DIJKSTRA
+### 3.3 【解决所有边权都是正数】DIJKSTRA
 
-求解有向图中最短路径的算法。对于每条边等权重，也就是变长都为 1 的有向图，我们当然可以借助 bfs 进行求解（对节点进行遍历执行 [Hierarchy of Points] 中的操作，找到两两节点之间的最小距离）。但是如果给有向图中的边进行加权，每条边所表示的距离存在区别也就是变长不同时，就很难用 bfs 直接进行求解了，转而借助 dijkstra 这个工具。
+求解有向图中最短路径的算法。对于每条边等权重，也就是变长都为 1 的有向图，我们当然可以借助 bfs 进行求解（对节点进行遍历执行 [Hierarchy of Points] 中的操作，找到两两节点之间的最小距离）。但是如果给有向图中的边进行加一个正向的权重，每条边所表示的距离存在区别也就是变长不同时，就很难用 bfs 直接进行求解了，转而借助 dijkstra 这个工具求解所有边都是正数的情况下的最短路径问题。
 
 #### [Simplicial Dijkstra](https://www.acwing.com/problem/content/851/)
 
@@ -4333,6 +4333,109 @@ int main() {
 
     // ---- step 2. 返回 1 号点到 n 号点的最短距离
     cout << dijkstra(1, n) << endl;
+
+    return 0;
+}
+```
+
+### 3.4 【存在负权边】BELLMAN FORD
+
+贝尔曼算法，简称 BF 。此算法只需要考虑所有边，因此一般不再使用邻接矩阵或者邻接表存储图中的有向图，而是直接用结构体把所有的边都存储起来
+
+```c++
+struct Edge { 
+  int a, b, w; // 边是从 a => b 边的权重是 w
+} edge[N]; // 总共有 n 条边
+```
+
+算法思想也比较简单直接，时间复杂度为 $O(nm)$
+
+```c++
+for n 循环 n 次 等价于找 n 条边
+  for 所有边 {a, b, w}
+		dist[b] = min(dist[b], dist[a] + w);【松弛操作】
+    // 注意这一步的更新必须不能发生串联！更新的时候 dist[a] 在做这次遍历时修改前的 dist[a] 而不能是修改了 dist[a] 后又用修改后的 dist[a] 去更新 dist[b]!
+      
+可以被证明：完成循环后 一定有 dist[b] <= dist[a] + w 【三角不等式】
+```
+
+对于一个存在负权边回路（回路的总权重为负数）的图来说，可能并不存在最短路径，因为绕着这样一个总权重为负数的回路走一圈其距离会一直减小，这样 $1$ 号点到 $n$ 号点的距离就最短距离可能就是 $-\infin$ 了（之所以是可能，是因为如果这个负环出现在 $1$ 号点到 $n$ 号点的路径上，那么就会出现负无穷的情况，如果负环根本无法出现在这条路径上，那明显就不会出现负无穷了）。所以最后要判断是否存在负权环，y 总说 bf 可以辅助进行判断，但是时间复杂度比较高，<font color=red>这个地方没有听太明白</font>，因为一般不采用这种方法进行计算，所以也不需要深究。
+
+#### [Edge Limitted Shortest Circuit](https://www.acwing.com/problem/content/855/)
+
+可以看到 bf 算法较比 Dijkstra 算法而言时间复杂度而言并不算优秀。但是对于存在负边的有向图来说，要解决==最多不超过 k 条边的最短路径==这一问题，也就是说在求最短路径的基础上加上一个==对边数的限制条件==后，原算法就不是那么容易求解出答案了，一般就只能采用 bf 算法进行求解。这个题目的现实意义是在约束条件下求解最优化问题（比如做坐飞机去旅游，有很多条路可以选，尽管换乘可以省钱，但是我不想换乘超过 n 次，这样就只需要考虑 n 次换乘以内的最便宜方案了）
+
+同样因为这个地方有了不超过 k 条边的限制，所以上面的 $-\infin$ 情况不会出现，也就不需要进行多余的的考虑了。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/8/31.
+    @comment Day 31. 寻找有负权边的有向图中在 k 条边的限制下的最短路径问题。一般只能采用 bf 算法进行求解
+    @note 坚持了 31 天，就算拔牙也是至少刷一道题。现在基本保持每天一道题目 1 个小时学习 + 反思的时间，坚持下去！
+*/
+
+#include<iostream>
+#include<cstring>
+
+using namespace std;
+
+const int N = 510;
+const int M = 1e5 + 10; // 点数的限制和边数的限制
+int n, m, k; // n 个点；m 条边；在 k 条边限制下的最短路径
+int dist[N], backup[N]; // dist 的还是 i 号点到起点的最短距离，backup 是为了防止串联出现对 dist 数组的备份数组，保留初始状态
+struct Edge {
+    // 存储边的结构体，表示 a => b 这条边的权重为 w
+    int a, b, w;
+} edge[M]; // 共有 m 条边
+int ans; // 全局变量存储答案
+
+// bf 算法，求解从 r 号点 到 t 号点在 k 条边限制下的最短路径
+bool bellman_ford(int r, int t, int k) {
+    // ---- step 1. 进行状态初始化 ---- //
+    memset(dist, 0x3f, sizeof(dist));
+    dist[r] = 0;
+
+    // ---- step 2. 进行 k 次循环，表示最多走 k 条边 ---- //
+    for (int i = 0; i < k; i++) {
+        /*
+         * 为了防止【串联】更新的发生必须要把 dist 中的值存储到 backup 中
+         * 什么是串联问题 ？
+         * 首先我们要明确 bf 算法有效的前提是每次更新 dist[b] 时 dist[a] 应该是进行本次外层循环是的值，而不是进行内层循环更新后的值
+         * 举个例子 对于图 1 => 2 (1)；2 => 3(1)；1 => 3(3)
+         * 设定 dist[1] = 0 后，会首先将 dist[2] 从正无穷更新为 1 此时如果直接用 dist 进行更新的话，dist[3] 会从正无穷更新为 1 + 1 = 2 这就发生了【串联】问题
+         * 正确的解决方法，是将本次外层循环的值先 copy 到 backup 中也就是说 dist[2] 在进行更新时，始终参考的都是之前未更新点的值！
+         * 对于这个例子本次外循环的值为 dist[1] = 0；dist[2] = 正无穷；dist[3] = 正无穷，将其 copy 到 backup 中
+         * 这样在进行循环内的更新时 dist[1] = 0; dist[2] = min{正无穷，0 + 1}; dist[3] = min{正无穷，正无穷 + 1} = 正无穷
+         */
+        memcpy(backup, dist, sizeof(dist));
+        for (int j = 0; j < m; j++) { // 遍历 n 条边
+            int a = edge[j].a, b = edge[j].b, w = edge[j].w;
+            dist[b] = min(dist[b], backup[a] + w);
+        }
+    }
+
+    // ---- step 3. 进行结果判断 ---- //
+    // 如果可能是正无穷那就说明到达不了。这个地方因为存在负权边，加以考虑数据范围，所以判断正无穷的方式是大于正无穷加负数后可能出现的下界
+    if (dist[t] > 0x3f3f3f3f / 2) return false;
+    else {
+        ans = dist[t];
+        return true;
+    }
+}
+
+int main() {
+    // ---- step 1. 初始化有向图 ---- //
+    cin >> n >> m >> k;
+    for (int i = 0; i < m; i++) { // 构建 m 条边
+        int a, b, w;
+        cin >> a >> b >> w;
+        edge[i] = {a, b, w};
+    }
+
+    // ---- step 2. 使用 bellman ford 算法求解 1 号点到 n 号点在 k 条边限制下的最短路径 ---- //
+    if (bellman_ford(1, n, k)) cout << ans;
+    else cout << "impossible";
 
     return 0;
 }
