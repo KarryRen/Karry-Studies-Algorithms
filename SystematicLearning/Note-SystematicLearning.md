@@ -4359,13 +4359,13 @@ for n 循环 n 次 等价于找 n 条边（这个等价必须要在下面不发�
 可以被证明：完成循环后 一定有 dist[b] <= dist[a] + w 【三角不等式】
 ```
 
-对于一个存在负权边回路（回路的总权重为负数）的图来说，可能并不存在最短路径，因为绕着这样一个总权重为负数的回路走一圈其距离会一直减小，这样 $1$ 号点到 $n$ 号点的距离就最短距离可能就是 $-\infin$ 了（之所以是可能，是因为如果这个负环出现在 $1$ 号点到 $n$ 号点的路径上，那么就会出现负无穷的情况，如果负环根本无法出现在这条路径上，那明显就不会出现负无穷了）。所以最后要判断是否存在负权环，y 总说 bf 可以辅助进行判断，但是时间复杂度比较高，<font color=red>这个地方没有听太明白</font>，因为一般不采用这种方法进行计算，所以也不需要深究。
+对于一个存在负权环（边形成回路且边的总权重为负数）的图来说，可能并不存在最短路径，因为绕着这样一个总权重为负数的回路走一圈其距离会一直减小，这样 $1$ 号点到 $n$ 号点的距离就最短距离可能就是 $-\infin$ 了（之所以是可能，是因为如果这个负环出现在 $1$ 号点到 $n$ 号点的路径上，那么就会出现负无穷的情况，如果负环根本无法出现在这条路径上，那明显就不会出现负无穷了）。所以需要要判断是否存在负权环，y 总说 bf 可以辅助进行判断，但是时间复杂度比较高，<font color=red>这个地方没有听太明白</font>，因为一般不采用这种方法进行计算，所以也不需要深究。bf 算法也可以判断是否存在负权环，核心是利用抽屉原理，这一点在后续的 bf 算法中有更加深刻的说明。
 
 #### [Edge Limitted Shortest Circuit](https://www.acwing.com/problem/content/855/)
 
 可以看到 bf 算法较比 Dijkstra 算法而言时间复杂度而言并不算优秀。但是对于存在负边的有向图来说，要解决==最多不超过 k 条边的最短路径==这一问题，也就是说在求含负权边的图最短路径的基础上加上一个==对边数的限制条件==后，其他算法就不是那么容易求解出答案了，一般就只能采用 bf 算法进行求解。这个题目的现实意义是在约束条件下求解最优化问题（比如做坐飞机去旅游，有很多条路可以选，尽管换乘可以省钱，但是我不想换乘超过 n 次，这样就只需要考虑 n 次换乘以内的最便宜方案了）
 
-同样因为这个地方有了不超过 k 条边的限制，所以上面的 $-\infin$ 情况不会出现，也就不需要进行多余的的考虑了。
+另外，因为这个地方有了不超过 k 条边的限制，所以上面的 $-\infin$ 情况不会出现，也就不需要进行多余的的考虑了。
 
 ```c++
 /*
@@ -4441,7 +4441,9 @@ int main() {
 }
 ```
 
-#### 3.5 【存在负权边】SPFA —— 本质是对 Bellman Ford 的优化
+### 3.5 【存在负权边】SPFA —— 本质是对 Bellman Ford 的优化
+
+#### [SPFA Shortest Circuit](https://www.acwing.com/problem/content/853/)
 
 可以发现 bf 算法中最大的冗余点在于每次循环时，对有向图中的所有边都进行了扫描，尝试将 dist 缩小，但是明显很多时候都是无法缩小的。比如对于第一次循环，只有起始点能到达的点的 dist 才会缩小，而后面的都不会改变无穷大的现状。
 
@@ -4456,4 +4458,275 @@ int main() {
 ```
 
 具体实现和 Dijkstra 经过堆优化很像。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/9/1.
+    @comment Day 32. spfa 是对 df 的优化，核心是抓住了 bf 中有很多没有完成的更新操作，只对可能被更新的点进行存储和操作
+    @not 开启新的九月
+*/
+
+#include<iostream>
+#include<cstring>
+#include<queue>
+
+using namespace std;
+
+const int N = 1e5 + 10; // 点数和变数的限制
+int n, m; // n 个点，m 条边
+int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
+int dist[N], st[N]; // 常规两件套，dist 表示 i 号点到起点的最短距离；st 表示 i 号点的状态
+queue<int> q; // 存储待更新点的点号
+int ans;
+
+// 邻接表加带权边操作
+void add_edge(int a, int b, int c) {
+    e[idx] = b;
+    w[idx] = c;
+    ne[idx] = h[a];
+    h[a] = idx;
+    idx++;
+}
+
+// spfa 算法从起点 r 号点到终点 t 号点的最短路径
+bool spfa(int r, int t) {
+    // ---- step 1. 状态初始化 ---- //
+    memset(dist, 0x3f, sizeof(dist));
+    dist[r] = 0;
+    q.push(r);
+    st[r] = true;
+
+    // ---- step 2. 围绕队列展开更新 ---- //
+    while (q.size()) {
+        int t = q.front(); // 取出之前有过更新的点，出队列 + 调状态
+        q.pop();
+        st[t] = false;
+
+        for (int i = h[t]; i != -1; i = ne[i]) {
+            int j = e[i]; // 取出 t 所能到达的点，只有这些点的 dist 才有可能被更新
+            if (dist[j] > dist[t] + w[i]) { // 如果可以被 t 更新，才进行更新
+                dist[j] = dist[t] + w[i];
+                if (!st[j]) { // 如果没在队列中才将其放入，否则不用 care
+                    q.push(j);
+                    st[j] = true;
+                }
+            }
+        }
+    }
+
+    // ---- step 3. 对终点编号做出判断 ---- //
+    if (dist[t] > 0x3f3f3f3f / 2) return false;
+    else {
+        ans = dist[t];
+        return true;
+    }
+}
+
+int main() {
+    // ---- step 1. 初始化有向图 ---- //
+    cin >> n >> m;
+    memset(h, -1, sizeof(h));
+    while (m--) {
+        int a, b, c;
+        cin >> a >> b >> c;
+        add_edge(a, b, c);
+    }
+
+    // ---- step 2. spfa 寻找最短路径 ---- //
+    if (!spfa(1, n)) cout << "impossible" << endl;
+    else cout << ans << endl;
+
+    return 0;
+}
+```
+
+#### [SPFA Judge Nagetive Ring](https://www.acwing.com/problem/content/854/)
+
+判断负环的核心是抽屉原理，回想一下，我们什么时候会更新点 a 的 dist[a] ？ 只有路径变换（到点 a 的路径变成了新的一条，在能够在到达 b 点的基础上加一条边到达 a）的时候才会更新 dist ，这个时候 dist[a] 所蕴含的边数显然增加了一条。
+
+因此我们想到可以把与 dist[N] 相对应的边的数量存储到 cnt[N] 中，如果 cnt[N] 中对应的从起始点到某点总共需要经历的边的数量大于等于点的数量，就说明==从起点到该点之间的路径之间存在 n + 1 及以上的点，此时必定存在负环==。注意，就像我们之前所说的那样，这种方法只能判断起始点能到达的负环，因此如果我们想要检测整个图中是否存在负环，我们需要把所有点都遍历一遍，最好的方法就是把所有点都初始化到队列中。
+
+最直观的解法
+
+```c++
+/*
+    @author Karry
+    @date on 2023/9/2.
+    @comment Day 33. 使用 spfa 判断有向图中是否存在负环
+    @note 直接暴力求解，多套一圈循环即可，十分 simple
+*/
+
+#include<iostream>
+#include<cstring>
+#include<queue>
+
+using namespace std;
+
+const int N = 1e5 + 10; // 点数和变数的限制
+int n, m; // n 个点，m 条边
+int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
+int dist[N], st[N]; // 常规两件套，dist 表示 i 号点到起点的最短距离；st 表示 i 号点的状态
+int cnt[N]; // cnt 和 dist 一一对应，表示 i 号点到起点最短距离需要经历的路径长度
+queue<int> q; // 存储待更新点的点号
+
+// 邻接表加带权边操作
+void add_edge(int a, int b, int c) {
+    e[idx] = b;
+    w[idx] = c;
+    ne[idx] = h[a];
+    h[a] = idx;
+    idx++;
+}
+
+// spfa 算法判断图中是否存在负环
+bool spfa() {
+    // 把所有可能的起点都来一次
+    for (int r = 1; r <= n; r++) {
+        // ---- step 1. 状态初始化 ---- //
+        memset(dist, 0x3f, sizeof(dist));
+        memset(cnt, 0, sizeof(cnt));
+        dist[r] = 0;
+        q.push(r);
+        st[r] = true;
+
+        // ---- step 2. 围绕队列展开更新 ---- //
+        while (q.size()) {
+            int t = q.front(); // 取出之前有过更新的点，出队列 + 调状态
+            q.pop();
+            st[t] = false;
+
+            for (int i = h[t]; i != -1; i = ne[i]) {
+                int j = e[i]; // 取出 t 所能到达的点，只有这些点的 dist 才有可能被更新
+                if (dist[j] > dist[t] + w[i]) { // 如果可以被 t 更新，才进行更新
+                    dist[j] = dist[t] + w[i];
+                    cnt[j] = cnt[t] + 1; // 更新 cnt
+                    if (cnt[j] >= n) return true;
+                    if (!st[j]) { // 如果没在队列中才将其放入，否则不用 care
+                        q.push(j);
+                        st[j] = true;
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    return false;
+}
+
+int main() {
+    // ---- step 1. 初始化有向图 ---- //
+    cin >> n >> m;
+    memset(h, -1, sizeof(h));
+    while (m--) {
+        int a, b, c;
+        cin >> a >> b >> c;
+        add_edge(a, b, c);
+    }
+
+    // ---- step 2. spfa 图中是否存在负环 ---- //
+    if (spfa()) cout << "Yes" << endl;
+    else cout << "No" << endl;
+
+    return 0;
+}
+```
+
+更加优雅的算法
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/9/2.
+    @comment Day 33. 使用 spfa 判断有向图中是否存在负环
+    @note 当然，对于这个题而言，如果我们想要让所有的点都当起点，可以再在外面套一层循环，暴力解决，十分简单，但是下面这种方法更是 elegant，复杂度稍微低一点
+*/
+
+#include<iostream>
+#include<cstring>
+#include<queue>
+
+using namespace std;
+
+const int N = 1e5 + 10; // 点数和变数的限制
+int n, m; // n 个点，m 条边
+int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
+/*
+ * spfa 判断负环三件套 这个地方 dist 的含义与之前的题目中完全不同了，这也是这道题的核心
+ * dist 只是代表存在负边时的一种更新器，不再有任何距离的含义，只有遇到负边才有可能更新（因此初始化为 0 即可，没必要初始化为正无穷）
+ * cnt 与 dit 一一对应，其表达的是在更新 dist 的时候走了多少条负边，如果负边的数量大于 n（所有边的数量肯定也大于 n 了）
+ * st 含义不变
+ */
+int dist[N], cnt[N], st[N];
+/*
+ * 除了上面的理解方法，也可以用下面这位大佬的思路，这样 dist 的含义就是一脉相承的了 【参考该题下的第一条评论】
+ * 我觉得可以这样理解：
+ * 1. 构造一个虚拟节点 x，单向指向所有的节点，且到所有节点距离为0；
+ * 2. 新图是否有负环等价于原始的图。
+ * 3. dist数组一开始为 0，没有违背算法过程，可以理解为根据算法已经从 x 更新到了各个节点，接下来的代码就是顺理成章。
+ * 所以 dist 数组从所有为0的状态开始是有对应意义的。就是先走一步。
+ */
+queue<int> q; // 存储待更新点的点号
+int ans;
+
+// 邻接表加带权边操作
+void add_edge(int a, int b, int c) {
+    e[idx] = b;
+    w[idx] = c;
+    ne[idx] = h[a];
+    h[a] = idx;
+    idx++;
+}
+
+// spfa 算法判断图中是否存在负环
+bool spfa() {
+    // ---- step 1. 状态初始化 ---- //
+    for (int i = 1; i <= n; i++) {
+        q.push(i); // 把所有的点都放入队列，表示每个点都可以当起点
+        st[i] = true;
+        // dist[i] = xx; 完全不需要对 dist 进行任何的初始化，直接全部为 0
+    }
+
+    // ---- step 2. 围绕队列展开更新 ---- //
+    while (q.size()) {
+        int t = q.front(); // 取出之前有过更新的点，出队列 + 调状态
+        q.pop();
+        st[t] = false;
+
+        for (int i = h[t]; i != -1; i = ne[i]) {
+            int j = e[i]; // 取出 t 所能到达的点，只有这些点的 dist 才有可能被更新
+            if (dist[j] > dist[t] + w[i]) { // 如果可以被 t 更新，才进行更新，注意只有 w[i] < 0 也就是负边出现的时候才有可能出现更新（变相只记录负边的数量）
+                dist[j] = dist[t] + w[i];
+                cnt[j] = cnt[t] + 1; // 表示到达该点需要经历的负边数 = 到该点起点所需要经历的负边数 + 1
+                if (cnt[j] >= n) return true;
+                if (!st[j]) { // 如果没在队列中才将其放入，否则不用 care
+                    q.push(j);
+                    st[j] = true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+int main() {
+    // ---- step 1. 初始化有向图 ---- //
+    cin >> n >> m;
+    memset(h, -1, sizeof(h));
+    while (m--) {
+        int a, b, c;
+        cin >> a >> b >> c;
+        add_edge(a, b, c);
+    }
+
+    // ---- step 2. spfa 图中是否存在负环 ---- //
+    if (spfa()) cout << "Yes" << endl;
+    else cout << "No" << endl;
+
+    return 0;
+}
+```
 
