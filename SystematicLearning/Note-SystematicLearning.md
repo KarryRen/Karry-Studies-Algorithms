@@ -2140,6 +2140,7 @@ int main() {
 ### 2.4 STRING
 
 > 第四种数据结构：字符串，其本质就是字符的数组。常见的问题就是字符串匹配、找子串等算法。
+>
 
 #### [KMP](https://www.acwing.com/problem/content/833/)
 
@@ -2518,7 +2519,7 @@ int main() {
 >   }
 >   ```
 >
-> 
+>   
 
 #### [Union Set](https://www.acwing.com/problem/content/838/)
 
@@ -3354,6 +3355,10 @@ int main() {
 
 dfs 和 bfs 做为经典的搜索算法，dfs 是一条路走到黑直到能找到结尾，但无法保证路径最短；bfs 则是一层层往下推，直至每一个点都遍历完成没有新的情况产生，因为有一层层的概念所以可以记录路径距离，进而找到最短路径。二者相通之处在于都只需要对所有点进行一次遍历，因此需要记录下点是否某点是否被遍历过。
 
+之后提到几个经典的最短路径算法，是对于图而言最重要的算法，是图中最常见的考察内容。单源最短路问题当然可以重复应用得到多源最短路的解，但是较比直接使用多源最短路问题而言，时间复杂度肯定更高，这就需要多源汇最短路。
+
+<img src="/Users/karry/Pictures/NoteImages/image-20230829232923880.png" alt="image-20230829232923880" style="zoom:50%;" />
+
 ### 3.1 DFS - search it （一条路走到黑）
 
 dfs（深搜）俗称为暴力搜索，关键是如何按照顺序进行输出。深度搜索的含义不言而喻，搜索过程可以用树的形式来呈现，就是一遍遍撞南墙（走到终点）后**回溯**到可以继续往下走的位置，和递归的本质是一样的（完全没有必要区分概念）。
@@ -3591,9 +3596,9 @@ int main() {
   }
   从下面的 dfs 中我们就可看到对这个思路的践行
   ```
-
+  
   代码实现如下：
-
+  
   ```c++
   int h[N]; // 顶点（链表的头）
   int e[N], ne[N], idx; // 这三个数组的含义和单链表完全相同
@@ -4134,15 +4139,9 @@ int main() {
   }
   ```
 
+### 3.3 【单源最短路 + 所有边权都是正数】DIJKSTRA
 
-
-==后续几个算法都是为求解最短路问题服务，这是一张整体的框架图。==
-
-<img src="/Users/karry/Pictures/NoteImages/image-20230829232923880.png" alt="image-20230829232923880" style="zoom:50%;" />
-
-### 3.3 【解决所有边权都是正数】DIJKSTRA
-
-求解有向图中最短路径的算法。对于每条边等权重，也就是变长都为 1 的有向图，我们当然可以借助 bfs 进行求解（对节点进行遍历执行 [Hierarchy of Points] 中的操作，找到两两节点之间的最小距离）。但是如果给有向图中的边进行加一个正向的权重，每条边所表示的距离存在区别也就是变长不同时，就很难用 bfs 直接进行求解了，转而借助 dijkstra 这个工具求解所有边都是正数的情况下的最短路径问题。
+求解有向图中最短路径的算法。对于每条边等权重，也就是变长都为 1 的有向图，我们当然可以借助 bfs 进行求解（对节点进行遍历执行 [Hierarchy of Points] 中的操作，找到两两节点之间的最小距离）。但是如果给有向图中的边进行加一个正向的权重，每条边所表示的距离存在区别也就是变长不同时，就很难用 bfs 直接进行求解了，转而用 dijkstra 这个工具求解所有边都是正数的情况下的最短路径问题。
 
 #### [Simplicial Dijkstra](https://www.acwing.com/problem/content/851/)
 
@@ -4215,7 +4214,7 @@ int main() {
     while (m--) {
         int a, b, c;
         cin >> a >> b >> c;
-        g[a][b] = min(g[a][b], c); // 由于是求最短路问题，所以出现重边时，只用存下来最短的那条边
+        g[a][b] = min(g[a][b], c); // 由于是求最短路问题，所以出现重边时，只用存下来最短的那条边，这个地方邻接矩阵表示的 g 和后面在 floyd 中再次使用邻接矩阵含义是并相同的，这个地方不用 care 自环问题
     }
 
     // ---- step 2. dijkstra 找到 n 号点到 1 号点的最短距离 ---- //
@@ -4309,7 +4308,7 @@ int dijkstra(int r, int t) {
             int j = e[i]; // 将 i 能到达的点的点号 j 取出来
             if (distance + w[i] < dist[j]) { // w[i] 的含义是 i -> j 的权重
                 dist[j] = distance + w[i]; // 找到更短的到起点的距离，就对 dist 进行更新
-                heap.push({dist[j], j}); // 该点可能是候选点，所以放入 heap 中
+                heap.push({dist[j], j}); // 该点可能是候选点，所以放入 heap 中 （push 入后就会自动排序）
             }
         }
 
@@ -4337,7 +4336,7 @@ int main() {
 }
 ```
 
-### 3.4 【存在负权边】BELLMAN FORD【如果还有最长边数限制只能用该算法】
+### 3.4 【单源最短路 + 存在负权边】BELLMAN FORD【如果有最长边数限制只能用该算法】
 
 贝尔曼算法，简称 BF 。此算法只需要考虑所有边，因此一般不再使用邻接矩阵或者邻接表存储图中的有向图，而是直接用结构体把所有的边都存储起来
 
@@ -4440,7 +4439,7 @@ int main() {
 }
 ```
 
-### 3.5 【存在负权边】SPFA —— 本质是对 Bellman Ford 的优化
+### 3.5 【单源最短路 + 存在负权边】SPFA 【本质是对 Bellman Ford 的优化】
 
 #### [SPFA Shortest Circuit](https://www.acwing.com/problem/content/853/)
 
@@ -4456,7 +4455,7 @@ int main() {
 	【只有起点 a 变小了，后继的 b 才有可能变小，才有可能存到队列中用以更新后续的点】
 ```
 
-具体实现和 Dijkstra 经过堆优化很像。
+具体实现和 Dijkstra 经过堆优化很像，甚至可以直接拿那个模版来写！
 
 ```c++
 /*
@@ -4472,7 +4471,7 @@ int main() {
 
 using namespace std;
 
-const int N = 1e5 + 10; // 点数和变数的限制
+const int N = 1e5 + 10; // 点数和边数的限制
 int n, m; // n 个点，m 条边
 int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
 int dist[N], st[N]; // 常规两件套，dist 表示 i 号点到起点的最短距离；st 表示 i 号点的状态
@@ -4562,7 +4561,7 @@ int main() {
 
 using namespace std;
 
-const int N = 1e5 + 10; // 点数和变数的限制
+const int N = 1e5 + 10; // 点数和边数的限制
 int n, m; // n 个点，m 条边
 int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
 int dist[N], st[N]; // 常规两件套，dist 表示 i 号点到起点的最短距离；st 表示 i 号点的状态
@@ -4633,7 +4632,7 @@ int main() {
 }
 ```
 
-更加优雅的解法，这种解法有这更流畅的思路
+更加优雅的解法，这种解法有着更流畅的思路
 
 ```c++
 /*
@@ -4649,7 +4648,7 @@ int main() {
 
 using namespace std;
 
-const int N = 1e5 + 10; // 点数和变数的限制
+const int N = 1e5 + 10; // 点数和边数的限制
 int n, m; // n 个点，m 条边
 int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
 /*
@@ -4729,3 +4728,185 @@ int main() {
 }
 ```
 
+#### [SPFA Multi-Source Shortest Circuit](https://www.acwing.com/problem/content/856/)
+
+就像我们之前说的那样，spfa 肯定可以解决多源问题，但是时间会超时。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/9/3.
+    @comment Day 34. spfa 解决多源最短路径问题
+    @note 直接把 spfa 拿过来，但是这样搞肯定会比较慢，对于这个题目而言是会超时的
+*/
+
+#include<iostream>
+#include<cstring>
+#include<queue>
+
+using namespace std;
+
+const int N = 1e5 + 10; // 点数和变数的限制
+int n, m, k; // n 个点，m 条边
+int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
+int dist[N], st[N]; // 常规两件套，dist 表示 i 号点到起点的最短距离；st 表示 i 号点的状态
+int ans;
+
+// 邻接表加带权边操作
+void add_edge(int a, int b, int c) {
+    e[idx] = b;
+    w[idx] = c;
+    ne[idx] = h[a];
+    h[a] = idx;
+    idx++;
+}
+
+// spfa 算法从起点 r 号点到终点 t 号点的最短路径
+bool spfa(int r, int t) {
+    // ---- step 1. 状态初始化 ---- //
+    memset(dist, 0x3f, sizeof(dist));
+    dist[r] = 0;
+
+    queue<int> q; // 存储待更新点的点号
+    q.push(r);
+    st[r] = true;
+
+    // ---- step 2. 围绕队列展开更新 ---- //
+    while (q.size()) {
+        int t = q.front(); // 取出之前有过更新的点，出队列 + 调状态
+        q.pop();
+        st[t] = false;
+
+        for (int i = h[t]; i != -1; i = ne[i]) {
+            int j = e[i]; // 取出 t 所能到达的点，只有这些点的 dist 才有可能被更新
+            if (dist[j] > dist[t] + w[i]) { // 如果可以被 t 更新，才进行更新
+                dist[j] = dist[t] + w[i];
+                if (!st[j]) { // 如果没在队列中才将其放入，否则不用 care
+                    q.push(j);
+                    st[j] = true;
+                }
+            }
+        }
+    }
+
+    // ---- step 3. 对终点编号做出判断 ---- //
+    if (dist[t] > 0x3f3f3f3f / 2) return false;
+    else {
+        ans = dist[t];
+        return true;
+    }
+}
+
+int main() {
+    cin >> n >> m >> k;
+
+    // ---- step 1. 初始化有向图 ---- //
+    memset(h, -1, sizeof(h));
+    while (m--) {
+        int a, b, c;
+        cin >> a >> b >> c;
+        add_edge(a, b, c);
+    }
+
+    // ---- step 2. spfa 寻找最短路径 k times ---- //
+    while (k--) {
+        memset(dist, 0, sizeof(dist)); // dist 初始化 （每次查询的时候都必须是全新状态）
+        memset(st, false, sizeof(st)); // st 初始化 （每次查询的时候点都没有被用过）
+
+        int r, t;
+        cin >> r >> t; // 输入起点和终点
+
+        if (!spfa(r, t)) cout << "impossible" << endl;
+        else cout << ans << endl;
+    }
+
+
+    return 0;
+}
+```
+
+### 3.6 【多源汇最短路】FLOYD
+
+多源汇最短路问题要想让时间复杂度尽可能低，就需要借助 Floyd 算法（时间复杂度为 $O(n^3)$），而不是将 SPFA 算法跑 k 次（时间复杂度为 $O(n^2k)$ 一旦查询次数过多（$k$ 过大），就会超时！）
+
+Floyd 算法思想比较简单，是基于动态规划算法写出的，具体形式如下，记住该形式即可（暂时不需要理解）
+
+```c++
+d[i][j] // 初始是一个邻接表
+// 使用三重循环 【整体的复杂度就是 n^3 和询问次数没有任何关系】
+for(int k = 1; k <= n; k++){
+  for(int i = 1; i <= n; i++){
+    for(int j = 1; j <= n; j++){
+      // 每次循环更新一次
+      d[i][j] = min(d[i][j], d[i][k] + d[i][j]);
+    }
+  }
+}
+// 更新完成后 d[i][j] 存储的就是点 i 到 点 j 的最短距离
+```
+
+#### [Floyd Multi-Source Shortest Circuit](https://www.acwing.com/problem/content/856/)
+
+按照上述的基本模块将代码写出即可，十分简单
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/9/3.
+    @comment Day 34. Floyd 求解多源汇最短路径问题
+    @note 这个算法写起来比较简单，其背后的原理是动态规划哈！现在先记住，后面再推导
+*/
+
+#include<iostream>
+
+using namespace std;
+
+const int N = 210, INF = 0x3f3f3f3f; // 定义点的数量和正无穷
+int d[N][N]; // floyd 中最重要的数组，初始化的时候表示邻接矩阵存储图，经过 floyd 算法后 d[i][j] 就变成了点 i 到点 j 的最短距离
+int n, m, q; // n 个点，m 条边，q 次询问
+
+// floyd 算法求解多源最短路问题
+void floyd() {
+    for (int k = 1; k <= n; k++)
+        for (int i = 1; i <= n; i++)
+            for (int j = 1; j <= n; j++)
+                d[i][j] = min(d[i][j], d[i][k] + d[k][j]); // base dp
+}
+
+int main() {
+    cin >> n >> m >> q;
+
+    // ---- step 1. 初始化图 ---- //
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            /*
+             * 这个地方之所以没像 Dijkstra 那样直接把图中所有点都初始化为正无穷，是因为 d 在变换后的含义不再是图了
+             * 而是两点之间的距离，所以需要提前把对角线初始化为 0
+             */
+            if (i == j) d[i][j] = 0;
+            else d[i][j] = INF;
+        }
+    }
+
+    // ---- step 2. 构造边 ---- //
+    while (m--) {
+        int a, b, c;
+        cin >> a >> b >> c;
+        d[a][b] = min(d[a][b], c);
+    }
+
+    // ---- step 3. 调用 floyd ---- //
+    floyd();
+
+    // ---- step 4. 进行 1 次询问 ---- //
+    while (q--) {
+        int r, t; // r 号点是起始点，t 号点是终点
+        cin >> r >> t;
+        // 经典无穷判断
+        if (d[r][t] > INF / 2) cout << "impossible" << endl;
+        else cout << d[r][t] << endl;
+    }
+
+    return 0;
+}
+```
