@@ -11,7 +11,7 @@
 
 using namespace std;
 
-const int N = 1e5 + 10; // 点数和变数的限制
+const int N = 1e5 + 10; // 点数和边数的限制
 int n, m; // n 个点，m 条边
 int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
 /*

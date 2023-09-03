@@ -1,8 +1,8 @@
 /*
     @author Karry 
-    @date on 2023/9/1.
-    @comment Day 32. spfa 是对 df 的优化，核心是抓住了 bf 中有很多没有完成的更新操作，只对可能被更新的点进行存储和操作
-    @not 开启新的九月
+    @date on 2023/9/3.
+    @comment Day 34. spfa 解决多源最短路径问题
+    @note 直接把 spfa 拿过来，但是这样搞肯定会比较慢，对于这个题目而言是会超时的
 */
 
 #include<iostream>
@@ -11,11 +11,10 @@
 
 using namespace std;
 
-const int N = 1e5 + 10; // 点数和边数的限制
-int n, m; // n 个点，m 条边
+const int N = 1e5 + 10; // 点数和变数的限制
+int n, m, k; // n 个点，m 条边
 int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
 int dist[N], st[N]; // 常规两件套，dist 表示 i 号点到起点的最短距离；st 表示 i 号点的状态
-queue<int> q; // 存储待更新点的点号
 int ans;
 
 // 邻接表加带权边操作
@@ -32,6 +31,8 @@ bool spfa(int r, int t) {
     // ---- step 1. 状态初始化 ---- //
     memset(dist, 0x3f, sizeof(dist));
     dist[r] = 0;
+
+    queue<int> q; // 存储待更新点的点号
     q.push(r);
     st[r] = true;
 
@@ -62,8 +63,9 @@ bool spfa(int r, int t) {
 }
 
 int main() {
+    cin >> n >> m >> k;
+
     // ---- step 1. 初始化有向图 ---- //
-    cin >> n >> m;
     memset(h, -1, sizeof(h));
     while (m--) {
         int a, b, c;
@@ -71,9 +73,18 @@ int main() {
         add_edge(a, b, c);
     }
 
-    // ---- step 2. spfa 寻找最短路径 ---- //
-    if (!spfa(1, n)) cout << "impossible" << endl;
-    else cout << ans << endl;
+    // ---- step 2. spfa 寻找最短路径 k times ---- //
+    while (k--) {
+        memset(dist, 0, sizeof(dist)); // dist 初始化 （每次查询的时候都必须是全新状态）
+        memset(st, false, sizeof(st)); // st 初始化 （每次查询的时候点都没有被用过）
+
+        int r, t;
+        cin >> r >> t; // 输入起点和终点
+
+        if (!spfa(r, t)) cout << "impossible" << endl;
+        else cout << ans << endl;
+    }
+
 
     return 0;
 }

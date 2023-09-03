@@ -11,7 +11,7 @@
 
 using namespace std;
 
-const int N = 1e5 + 10; // 点数和变数的限制
+const int N = 1e5 + 10; // 点数和边数的限制
 int n, m; // n 个点，m 条边
 int h[N], e[N], w[N], ne[N], idx; // 邻接表表示有向图
 int dist[N], st[N]; // 常规两件套，dist 表示 i 号点到起点的最短距离；st 表示 i 号点的状态

@@ -38,7 +38,7 @@ int dijkstra(int r, int t) {
                 t = j;
         st[t] = true; // 将其选入【就位点池】
 
-        // --- step 2.2 因为 s 发生了改变，基于新加入的点，更新 dist --- //
+        // --- step 2.2 因为 s 发生了改变，基于新加入的点，更新 dist
         for (int j = 1; j <= n; j++) // 同样还是对 1 ～ n 号点进行遍历更新
             dist[j] = min(dist[j], dist[t] + g[t][j]); // j 号点到起点的距离至少可以有两种路 1. 直接到起点； 2. 先到 t 号点，再去起点
     }
