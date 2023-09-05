@@ -4915,9 +4915,9 @@ int main() {
 
 最小生成树算法，主要有两种思路一种是 Prim 一种是 Kruskal 对应的实际问题有在 n 个城市之间（完全图）修建起来距离最短的连通公路。
 
-#### [Prim](https://www.acwing.com/problem/content/860/)
+#### [Prim](https://www.acwing.com/problem/content/860/)【核心是加点】
 
-思路和 Dijkstra 很像，贪心的思路，集合不断往后找到最短距离点拓展形成最后的最小生成树，基本思路如下：
+思路和 Dijkstra 如出一辙，贪心的思路，集合不断往后找到最短距离点拓展形成最后的最小生成树，基本思路如下：
 
 ```c++
 // 最小生成树的核心思路是将已经就位的状态点集合 s[N] 一点点增大
@@ -4938,13 +4938,13 @@ step 2.
 - 如何找到距离集合最近的点？
 
   ```
-  不在 s 中，dist 最小的点就是距离集合最近的点
+  不在 s 中，且 dist 最小的点就是距离集合最近的点
   ```
 
 - 如何用已经找到的点 t 来更新其他点到集合的距离？
 
   ```
-  和 Dijkstra 一样，利用贪心的思想，dist 是表示的最近的距离，因此只用关注 dist 即可
+  和 Dijkstra 一样，利用贪心的思想，dist 表示的是该点到集合最近的距离，因此只用关注 dist 即可
   ```
 
 具体的代码实现
@@ -4978,10 +4978,10 @@ int prim() {
             if (!s[j] && (t == -1 || dist[j] < dist[t])) // 求出来当前不在 s 中且距离 s 最近的点
                 t = j;
 
-        if (i != 1 && dist[t] == INF) return INF; // 出现了中断点，证明没有最小生成树 （排除第一次，这个地方是为了排除特殊的边界情况）
+        if (i != 1 && dist[t] == INF) return INF; // 出现了中断点，证明没有最小生成树 （排除第一次，这个地方是为了排除特殊的边界情况，比如出现 a=>a -6 自环负权的情况）
 
         s[t] = true; // 将点 t 放入 s 中
-        if (i != 1) res += dist[t]; // res 中加上路径的长度 (第一次不用加)
+        if (i != 1) res += dist[t]; // res 中加上路径的长度 (第一次不用加，放在这是为了排除边界情况，比如出现 a=>a -6 自环负权的情况)
 
         for (int j = 1; j <= n; j++) dist[j] = min(dist[j], g[t][j]); // 用新的加入的点 t 来更新 dist
     }
@@ -5006,6 +5006,99 @@ int main() {
     // ---- step 3. 判断 ---- //
     if (r == INF) cout << "impossible";
     else cout << r;
+
+    return 0;
+}
+```
+
+#### [Kruskal](https://www.acwing.com/problem/content/861/)【核心是加边】
+
+最为直观的最小生成树算法，直接将最短边尽可能地拿进来，算法思路如下
+
+```c++
+step 1. 
+	将所有边按照权重从小到大排序（随便用一种方法）【这一步是 Kruskal 算法的瓶颈 O(mlogm)】
+
+step 2.
+	按照排好的顺序，从小到大，枚举每条边 a => b 其权重为 c
+	如果对于该边对应的两个端点 a、b 而言，点 a 所在的集合与点 b 所在的集合是不连通的，就把这条边加到生成树中，作为最小生成树的一部分。如果二者已经在一个集合中了就直接跳过该边
+```
+
+第二步不太容易想清楚，怎么样控制集合，同时查询点是否在一个集合中呢？自然联想到之前在==并查集==问题中的操作，并查集的思路可以帮助我们简单实现如下内容：
+
+```c++
+a. 将两个点放在一个集合中
+b. 查询量给的那是否在一个集合中
+```
+
+所以，说白了，Kruskal 就是并查集这种数据结构的一种应用
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/9/5.
+    @comment Day 36
+    @note 核心是选权最小的边，组合成最小生成树；时间复杂度比较低，能够处理点数较多的稠密图
+*/
+
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N = 2e5 + 10; // 边的数量上限
+int p[N]; // 并查集中的 p[N] 概念，表示点 i 指向的上一个节点
+int n, m; // n 个点，m 条边
+int res; // 全局变量存储最小生成树的权重之和
+// 这个地方用一个边的结构体来封装边；因为后续需要用到排序，所以就不能用邻接矩阵或者邻接表了
+struct Edge {
+    int a, b, w;
+
+    bool operator<(Edge &E) const { // 结构体符号重载
+        return w < E.w;
+    }
+} edges[N];
+
+// 并查集中的找点 + 压缩概念
+int find_root(int x) {
+    if (p[x] != x) p[x] = find_root(p[x]);
+    return p[x];
+}
+
+// kruskal 算法求解最小生成树
+int kruskal() {
+    // ---- step 1. 对有向图中的边的权重排序 ---- //
+    sort(edges, edges + m);
+
+    // ---- step 2. 并查集的初始化 ---- //
+    for (int i = 0; i < m; i++) p[i] = i;
+
+    // ---- step 3. 从小到大遍历所有边，进行最小生成树的构造 ---- //
+    int cnt_m = 0; // 记录当前放入了多少条边 （如果全部的边都遍历完了，但是放入的边数小于 n - 1 说明存在未被连通的点）
+    for (int i = 0; i < m; i++) {
+        int a = edges[i].a, b = edges[i].b, w = edges[i].w; // 取出该边对应的顶点和权重
+        if (find_root(a) != find_root(b)) { // 如果二者不在一个集合中
+            p[find_root(a)] = find_root(b); // 归到一个集合中
+            cnt_m++;
+            res += w;
+        }
+    }
+
+    return cnt_m;
+}
+
+int main() {
+    cin >> n >> m;
+
+    // ---- step 1. 构建初始边的集合 ---- //
+    for (int i = 0; i < m; i++) {
+        int a, b, c;
+        cin >> a >> b >> c;
+        edges[i] = {a, b, c};
+    }
+
+    if (kruskal() < n - 1) cout << "impossible";
+    else cout << res;
 
     return 0;
 }
