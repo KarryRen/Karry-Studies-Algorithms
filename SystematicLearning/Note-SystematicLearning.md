@@ -3351,13 +3351,21 @@ int main() {
 
 ## 3. SEARCH AND GRAPH THEORY
 
-将世间万物抽象为图节点，将关系抽象为边进行处理。
+将世间万物抽象为图节点，将关系抽象为边进行处理，核心是三大问题。
 
-dfs 和 bfs 做为经典的搜索算法，dfs 是一条路走到黑直到能找到结尾，但无法保证路径最短；bfs 则是一层层往下推，直至每一个点都遍历完成没有新的情况产生，因为有一层层的概念所以可以记录路径距离，进而找到最短路径。二者相通之处在于都只需要对所有点进行一次遍历，因此需要记录下点是否某点是否被遍历过。
+dfs 和 bfs 做为==**经典的搜索算法**==，dfs 是一条路走到黑直到能找到结尾，但无法保证路径最短；bfs 则是一层层往下推，直至每一个点都遍历完成没有新的情况产生，因为有一层层的概念所以可以记录路径距离，进而找到最短路径。二者相通之处在于都只需要对所有点进行一次遍历，因此需要记录下点是否某点是否被遍历过。
 
-之后提到几个经典的最短路径算法，是对于图而言最重要的算法，是图中最常见的考察内容。单源最短路问题当然可以重复应用得到多源最短路的解，但是较比直接使用多源最短路问题而言，时间复杂度肯定更高，这就需要多源汇最短路。
+之后提到几个==**经典的最短路径算法**==，是对于图而言最重要的算法，是图中最常见的考察内容。单源最短路问题当然可以重复应用得到多源最短路的解，但是较比直接使用多源最短路问题而言，时间复杂度肯定更高，这就需要多源汇最短路。
 
 <img src="/Users/karry/Pictures/NoteImages/image-20230829232923880.png" alt="image-20230829232923880" style="zoom:50%;" />
+
+然后就是==**两类最小生成树算法**==，一个是 Prim 一个是 Kruskal
+
+<img src="/Users/karry/Pictures/NoteImages/image-20230907003226269.png" alt="image-20230907003226269" style="zoom:50%;" />
+
+最后是**==二分图算法==**，两种方式，一是染色法，一是匈牙利算法
+
+<img src="/Users/karry/Pictures/NoteImages/image-20230907003345470.png" alt="image-20230907003345470" style="zoom:50%;" />
 
 ### 3.1 DFS - search it （一条路走到黑）
 
@@ -4913,7 +4921,7 @@ int main() {
 
 ### 3.7 MINIMUM SPANNING TRESS
 
-最小生成树算法，主要有两种思路一种是 Prim 一种是 Kruskal 对应的实际问题有在 n 个城市之间（完全图）修建起来距离最短的连通公路。
+最小生成树算法，主要有两种思路一种是 Prim（拓展点集）一种是 Kruskal（拓展边集）。 对应的实际问题有在 n 个城市之间（完全图）修建起来距离最短的能够将所有点连接起来的连通公路。
 
 #### [Prim](https://www.acwing.com/problem/content/860/)【核心是加点】
 
@@ -5096,11 +5104,97 @@ int main() {
         cin >> a >> b >> c;
         edges[i] = {a, b, c};
     }
-
 	
+  	// ---- step 2. kruskal 求解 ---- //
     if (kruskal() < n - 1) cout << "impossible";
     else cout << res;
 
     return 0;
 }
 ```
+
+### 3.8 BIPARTITE GRAPH
+
+二分图是指能够将点二分成两个集合，保证集合内部顶点之间不存在边，所有的边一定是跨集合连接顶点的。
+
+#### [Coloration](https://www.acwing.com/problem/content/862/)
+
+染色法的根基是如下定理：一个图如果是二分图，当且仅当图中不存在奇数环（奇数个点连成的环）
+
+```c++
+【必要性】一个图是二分图，那么必然不存在奇数环。如果存在，起点既在 A 集合又在 B 集合，矛盾
+【充分性】一个图中不含有奇数环，这个图必然是二分图。通过染色过程可以说明，只要给起点标好了号码，那么必然可以分成两类。
+```
+
+因此，就可以用染色的思路来判断一个图是否为二分图，只要一个点的颜色确定了，整个图的颜色就确定了。
+
+```c++
+/*
+    @author Karry 
+    @date on 2023/9/7.
+    @comment Day 38. 判断二分图的经典方法 （dfs 的应用）
+*/
+
+#include<iostream>
+#include<cstring>
+
+using namespace std;
+
+const int N = 100010, M = 200010; // 点数和边数的上限，因为是无向图所以有二倍关系
+
+int n, m; // 点数 和 边数
+int h[N], e[M], ne[M], idx; // 经典邻接表存储图
+int color[N]; // 标识点是否被染色
+
+// 邻接表存储无向图
+void add_edge(int a, int b) {
+    e[idx] = b;
+    ne[idx] = h[a];
+    h[a] = idx;
+    idx ++ ;
+}
+
+// dfs 进行染色
+bool dfs(int u, int c) {
+    // ---- step 1. 对 u 号点。染上 c 颜色 ---- //
+    color[u] = c;
+
+    // ---- step 2. 访问 u 号点所能到达的所有点 ---- //
+    for (int i = h[u]; i != -1; i = ne[i]) {
+        int j = e[i]; // 取出点的编号
+        if (!color[j]) { // 如果该点没有被染色，那么就将其染为 3 - c
+            if (!dfs(j, 3 - c)) return false;
+        }
+        else if (color[j] == c) return false; // 如果出现矛盾，说明不是二分图
+    }
+
+    return true;
+}
+
+int main() {
+    // ---- step 1. 初始化无向图 ---- //
+    cin >> n >> m;
+    memset(h, -1, sizeof h);
+    while (m -- ) {
+        int a, b;
+        scanf("%d%d", &a, &b);
+        add_edge(a, b), add_edge(b, a);
+    }
+    
+    // ---- step 2. 进行染色并判断 ---- //
+    bool flag = true;
+    for (int i = 1; i <= n; i ++ ) {
+        if (!color[i]) { // 如果该点没被染过色，就进行染色
+            if (!dfs(i, 1)) { // 从 1 号颜色开始染色
+                flag = false;
+                break;
+            }
+        }
+    }
+    if (flag) cout << "Yes";
+    else cout << "No";
+
+    return 0;
+}
+```
+
