@@ -5097,6 +5097,7 @@ int main() {
         edges[i] = {a, b, c};
     }
 
+	
     if (kruskal() < n - 1) cout << "impossible";
     else cout << res;
 
