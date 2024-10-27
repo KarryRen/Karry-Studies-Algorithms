@@ -3,7 +3,6 @@ Documenting Karry's process of learning algorithms for communication.
 
 ```python
 Karry-Studies-Algorithms/
-├── ClionProject # The project file to run Code.
 ├── SystematicLearning # The Systematic Learning Codes.
 ```
 
