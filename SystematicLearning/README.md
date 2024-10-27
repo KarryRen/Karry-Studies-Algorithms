@@ -1,18 +1,14 @@
 # Note of Systematic Learning
 
-> [Basic Algorithm Course][https://www.acwing.com/activity/content/punch_the_clock/11/]
+> Karry
 
-<center>Karry</center>
 
-[toc]
 
 ## 1. FOUNDATION
 
 ### 1.1 SORT
 
-> [十大经典排序算法](https://blog.csdn.net/qq_35344198/article/details/106857042)
-
-#### [Quick Sort](https://www.acwing.com/problem/content/description/787/)
+#### [Quick Sort](https://www.acwing.com/problem/content/description/787/) LeetCode 912.
 
 快排（时间复杂度 $n log_2n$）的核心思想是==分治==，主要步骤为：
 
@@ -39,97 +35,11 @@ Way 2 : 优美的做法, 开两个指针
 	3. i 和 j 互换, i 右移一位, j 左移一位, 重复 1 - 2, 直至 i 和 j 相遇
 ```
 
-[解析](https://www.acwing.com/solution/content/16777/) 核心难点在于边界问题（避免死循环情况）
+#### [K Number (Quick Select)](https://www.acwing.com/problem/content/788/) LeetCode 215.
 
-```c++
-#include<iostream>
+快速选择，和上述快速选择一脉相承，是快速排序算法的一种应用。**注意**：LeetCode 上是找最大的 k^th number，我的代码中实现的是选最小的 k^th number，修改思路很简单，快速排序调整成由大到小即可。
 
-using namespace std;
-
-int N = 1e6 + 10;
-int q[N];
-
-void quick_sort(int q[], int l, int r){
-    // 判别边界
-    if (l >= r) return;
-    
-    // 分成子问题, 分成子问题切忌 0, N 和 N, 0 这两种情况
-    int x = q[l + r >> 1]; // 注意此处是取了一个数字，而不是下标，这是和归并的本质区别
-    // 如果后面以 j 为边界, 就需要下取整; 如果后面以 i 为边界就需要下取整。
-    int i = l - 1;
-    int j = r + 1;
-    
-    while (i < j) {
-        do i ++; while (q[i] < x); // 不断往后移动
-        do j --; while (q[j] > x); // 不断往前移动
-        if(i < j) swap(q[i], q[j]);
-    }
-    
-    // 递归解决子问题
-    quick_sort(q, l, j);
-    quick_sort(q, j + 1, r);
-}
-
-int main(){
-    scanf("%d", &n);
-    
-    for (int i = 0; i < n; i++) scanf("%d", &q[n]);
-    
-    quick_sort(q, 0, n - 1);
-    
-    for (int i = 0; i< n; i++) printf("%d ", q[n]);
-    
-    return 0;
-}
-```
-
-#### [K Number (Quick Select)](https://www.acwing.com/problem/content/788/)
-
-快速选择，和上述快速选择一脉相承，是快速排序算法的一种应用
-
-```c++
-#include<iostream>
-
-using namespace std;
-
-const int N = 1e5 + 10;
-int n, k;
-int q[N];
-
-int quick_k_num(int q[], int l, int r, int k) {
-	if (l == r) return q[l]; // 如果只有一个数，那这个数一定是第 k 小的
-
-	int x = q[l + r >> 1];
-	int i = l - 1, j = r + 1;
-
-	while (i < j) {
-		do i ++;
-		while (q[i] < x);
-		do j --;
-		while (q[j] > x);
-		if (i < j) swap(q[i], q[j]);
-	}
-
-	int sl = j - l + 1; // 左边数字的个数
-	if (k <= sl) {
-		return quick_k_num(q, l, j, k); // 在左边 
-	} else {
-		return quick_k_num(q, j + 1, r, k - sl); // 在右边 
-	}
-}
-
-int main() {
-	scanf("%d %d", &n, &k);
-
-	for (int i = 0; i < n; i++) scanf("%d", &q[i]);
-
-	printf("%d", quick_k_num(q, 0, n - 1, k));
-    
-    return 0;
-}
-```
-
-#### [Merge Sort](https://www.acwing.com/problem/content/789/)
+#### [Merge Sort](https://www.acwing.com/problem/content/789/) LeetCode 912.
 
 归并排序（时间复杂度 $nlog_2n$），同样是==分治==的思想，主要步骤如下：
 
@@ -140,136 +50,28 @@ Step 2. 递归排左右两边（左右两边必须是有序的，所以需要先
 Step 3. 将排好的归并起来 *重点*
 ```
 
-==实现归并==：具体实现方法为==双指针==，两个有序的数组分别设置一个指针不断往后跑。归并排序是稳定的。
+==实现归并==：具体实现方法为==双指针==，两个有序的数组分别设置一个指针不断往后跑。归并排序是稳定的（稳定的概念：相同的数排序后相对位置是否发生改变）
 
-> 稳定的概念：相同的数排序后相对位置是否发生改变
+#### [Inversion Number](https://www.acwing.com/problem/content/790/) LeetCode LCR 170.
 
-[解析](https://www.acwing.com/solution/content/16778/)
+思路同样是==分治==，该题目本质上是归并排序的一个应用，首先找到中点，将所有的逆序对情况分为三种：
 
-```c++
-#include<iostream>
-
-using namespace std;
-
-const int N = 1e6+10;
-int n;
-int q[N], tmp[N]; // using a temp array to store num
-
-void merge_sort(int q[], int l, int r){
-	if (l >= r) return;
-	
-	// Step 1. get the mid
-	int mid = l + r >> 1;
-	
-	// Step 2. process the detail question
-	merge_sort(q, l, mid), merge_sort(q, mid + 1, r);
-	
-	// Step 3. do the operation
-	int k = 0; // k is a temp number
-	int i = l, j = mid + 1; // the i and j are pointers, seperatly.
-	while (i <= mid && j <= r){
-		if (q[i] <= q[j]){
-			tmp[ k ++ ] = q[ i ++ ];
-		} else {
-			tmp[ k ++ ] = q[ j ++ ];
-		}
-	}
-	// if there are some number not ready
-	while (i <= mid) tmp [ k ++ ] = q [ i ++ ];
-	while (j <= r) tmp [ k ++ ] = q [ j ++ ];
-	
-  // put the number back
-	for (i = l, j = 0; i <= r; i ++, j++) q[i] = tmp[j];
-}
-
-int main(){
-	scanf("%d", &n);
-	
-	for (int i = 0; i < n; i ++) scanf("%d", &q[i]);
-	
-	merge_sort(q, 0, n - 1);
-	
-	for (int i = 0; i < n; i ++) printf("%d ", q[i]);
-	
-	return 0;
-}
-```
-
-#### [Inversion Number](https://www.acwing.com/problem/content/790/)
-
-思路同样是==分治==，是归并排序的一个应用
-
-> 找到中点，将所有的逆序对情况分为三种：
-
+```python
 1. 逆序对在左半边 （直接加上）
 2. 逆序对在右半边（直接加上）
-3. 逆序对被中点分割（两边排序与否是不影响的）
-
-```c++
-#include<iostream>
-
-using namespace std;
-
-typedef long long LL; // beacuse the result will boom the int, we should use the long long to define the result
-
-const int N = 1e6+10;
-int n;
-int q[N], tmp[N]; // as same as the merge sort
-
-LL inversion_number(int q[], int l, int r){
-	if (l >= r) return 0;
-	
-	// Step 1. set mid
-	int mid = l + r >> 1;
-	
-	// Step 2. seperate
-	LL res = inversion_number(q, l, mid) + inversion_number(q, mid + 1, r);
-	
-	// Step 3. do the operation
-	int k = 0;
-	int i = l, j = mid + 1;
-	while (i <= mid && j <= r){
-		if (q[i] <= q[j]){
-			tmp[ k ++ ] = q[ i ++ ];
-		} else {
-			tmp[ k ++ ] = q[ j ++ ];
-			res += mid - i + 1; // 如果此处出现一个逆序的数，根据数组分区有序性（就是说前、后半区的数字都是有序的）
-      										// 因此如果不排序就得不到该结果，这就是采用归并排序的原因所在
-      										// 那么逆序对的数量就要考虑到前半区一旦出现一个，其后面的数字也都大于后半区的数字，进而得到这一个结果
-		}
-	}
-	while (i <= mid) tmp [ k++ ] = q[ i ++ ];
-	while (j <= r) tmp [ k++ ] = q[ j ++ ];
-	
-	for (i = l, j = 0; i <= r; i++, j++) q[i] = tmp[j];
-	
-	return res;
-}
-
-int main(){
-	scanf("%d", &n);
-	
-	for (int i = 0; i < n; i++) scanf("%d", &q[i]);
-	
-	printf("%ld", inversion_number(q, 0, n - 1));
-	
-	return 0;
-}
+3. 逆序对被中点分割（两边排序与否，不产生影响的）
 ```
+
+
 
 ### 1.2 DICHOTOMY
 
-> 二分可以划分为`整数二分`和`实数二分`
+> 二分可以划分为`整数二分`和`实数二分`。二分的本质并不是单调性，而是存在一种划分方式。也就是说：有单调性的可以二分，但是没有单调性的也可能可以二分。
 >
-> 二分的本质并不是单调性，而是存在一种划分方式。
->
-> 也就是说：有单调性的可以二分，但是没有单调性的也可能可以二分。
 
-#### [整数二分](https://www.acwing.com/problem/content/791/)
+#### [Number Range](https://www.acwing.com/problem/content/791/)
 
-> 因为有边界问题，所以要考虑的东西有点多
-
-二分的本质是可以找到一个确定的边界将原结构一分为二。
+二分的本质是可以找到一个确定的边界将原结构一分为二。 二分算法一定是可以找到边界的，只不过边界的答案不满足性质，那就说明这个题目无解了。
 
 共有两个模板，关于如何选择，有一个迅速的口诀 ==左 1 右 0==（来自于边界是否会死循环）：
 
@@ -288,7 +90,7 @@ void dichotomy_branch1(){
         // -- set the mid
         int mid = l + r >> 1;
         // -- check() must be true, so r = mid
-        if(check(mid)) r = mid; // here chech(mid) is q[mid] >= num;
+        if(check(mid)) r = mid; // here check(mid) is q[mid] >= num;
         else l = mid + 1;
     }
 }
@@ -309,9 +111,7 @@ void dichotomy_branch1(){
 }
 ```
 
- 二分算法一定是可以找到边界的，只不过边界的答案不满足性质，那就说明这个题目无解了。
-
-#### [实数二分](https://www.acwing.com/problem/content/792/)
+#### [Cubic Root](https://www.acwing.com/problem/content/792/)
 
 > 没有边界问题了，但是有精确值问题，如果是保留 n 位小数，一般是让 l 和 r 之间的差别小于 $10^{-(n + 2)}$ 注意变量类型即可
 
@@ -338,6 +138,8 @@ int main(){
 	return 0;
 }
 ```
+
+
 
 ### 1.3 HIGH-PRECISION
 
@@ -5281,7 +5083,7 @@ int main(){
 }
 ```
 
-9 月 8 日到 9 月 27 日 连续十八天没写 dui
+9 月 8 日到 9 月 22 日 连续十五天没写
 
 ### 4. MATH
 

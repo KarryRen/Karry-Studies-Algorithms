@@ -1,7 +1,15 @@
 # Karry-Studies-Algorithms
 Documenting Karry's process of learning algorithms for communication.
 
-## 📖 Systematic Learning 
+```python
+Karry-Studies-Algorithms/
+├── ClionProject # The project file to run Code.
+├── SystematicLearning # The Systematic Learning Codes.
+```
 
-1. *<u>**Class 1.**</u>*  From `Aug 1, 2023 to XXX.` Learning the [Basic Algorithm Course](https://www.acwing.com/activity/content/punch_the_clock/11/).
+
+
+## 📖 Systematic Learning 📖
+
+1. *<u>**Class 1.**</u>*  From `Oct 27, 2024, to XXX.` Learning the [Basic Algorithm Course](https://www.acwing.com/activity/content/punch_the_clock/11/) with LeetCode questions.
 

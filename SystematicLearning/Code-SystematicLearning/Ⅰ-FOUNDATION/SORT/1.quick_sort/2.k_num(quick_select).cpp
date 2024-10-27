@@ -1,7 +1,10 @@
 /*
-	Day 1
-	Karry 2023.8.11 
+ * @Time    : 2024/10/27 12:16
+ * @Author  : Karry Ren
+ * @Comment : Select the k^th (smallest or biggest) number by quick sort.
+ * @LeetCode: 215
 */
+
 #include<iostream>
 
 using namespace std;
@@ -11,33 +14,33 @@ int n, k;
 int q[N];
 
 int quick_k_num(int q[], int l, int r, int k) {
-	if (l == r) return q[l]; // Èç¹ûÖ»ÓÐÒ»¸öÊý£¬ÄÇÕâ¸öÊýÒ»¶¨ÊÇµÚ k Ð¡µÄ
+    // å¦‚æžœåªæœ‰ä¸€ä¸ªæ•°ï¼Œé‚£è¿™ä¸ªæ•°ä¸€å®šæ˜¯ç¬¬ k å°çš„
+    if (l == r) return q[l];
 
-	int x = q[l + r >> 1];
-	int i = l - 1, j = r + 1;
+    // æ‰¾ä¸­å¿ƒåšæŽ’åº
+    int x = q[l + r >> 1];
+    int i = l - 1, j = r + 1;
+    while (i < j) {
+        do i++; while (q[i] < x);
+        do j--; while (q[j] > x);
+        if (i < j) swap(q[i], q[j]);
+    }
 
-	while (i < j) {
-		do i ++;
-		while (q[i] < x);
-		do j --;
-		while (q[j] > x);
-		if (i < j) swap(q[i], q[j]);
-	}
-
-	int sl = j - l + 1; // ×ó±ßÊý×ÖµÄ¸öÊý
-	if (k <= sl) {
-		return quick_k_num(q, l, j, k); // ÔÚ×ó±ß 
-	} else {
-		return quick_k_num(q, j + 1, r, k - sl); // ÔÚÓÒ±ß 
-	}
+    // å·¦å³ä¸¤ä¾§åˆ†è€Œæ²»ä¹‹
+    int sl = j - l + 1;
+    if (k <= sl) {
+        return quick_k_num(q, l, j, k); // åœ¨å·¦è¾¹ç»§ç»­æ‰¾
+    } else {
+        return quick_k_num(q, j + 1, r, k - sl); // åœ¨å³è¾¹ç»§ç»­æ‰¾
+    }
 }
 
 int main() {
-	scanf("%d %d", &n, &k);
+    scanf("%d %d", &n, &k);
 
-	for (int i = 0; i < n; i++) scanf("%d", &q[i]);
+    for (int i = 0; i < n; i++) scanf("%d", &q[i]);
 
-	printf("%d", quick_k_num(q, 0, n - 1, k));
-	
-	return 0;
+    printf("%d", quick_k_num(q, 0, n - 1, k));
+
+    return 0;
 }
