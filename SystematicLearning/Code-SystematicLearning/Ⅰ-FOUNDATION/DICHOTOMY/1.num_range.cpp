@@ -2,7 +2,7 @@
  * @Time    : 2024/10/27 13:06
  * @Author  : Karry Ren
  * @Comment : Compute the range of duplicate number.
- * @LeetCode: Nan
+ * @LeetCode: 704
 */
 
 #include<iostream>
@@ -28,10 +28,11 @@ int main() {
 
         // DICHOTOMY finding
         int l = 0, r = n - 1; // the boundary
+
         // - find the left beginning
         while (l < r) {
             // -- step 1 set mid
-            int mid = l + r >> 1;
+            int mid = (l + r) >> 1;
             // -- step 2 check and adjust the l and r
             if (q[mid] >= num) r = mid;
             else l = mid + 1;
@@ -46,7 +47,7 @@ int main() {
             int l = 0, r = n - 1; // the boundary
             while (l < r) {
                 // -- step 1 set mid
-                int mid = l + r + 1 >> 1;
+                int mid = (l + r + 1) >> 1;
                 // -- step 2 check and adjust the l and r
                 if (q[mid] <= num) l = mid;
                 else r = mid - 1;
