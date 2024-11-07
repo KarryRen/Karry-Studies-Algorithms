@@ -1,3 +1,10 @@
+/*
+ * @Time    : 2024/10/27 18:56
+ * @Author  : Karry Ren
+ * @Comment : Compute the mul large number of str.
+ * @LeetCode: None (This is a sample version of 43)
+*/
+
 #include<iostream>
 #include<vector>
 
@@ -11,11 +18,10 @@ vector<int> high_precision_mul(vector<int> &A, int b) {
     vector<int> C;
 
     int t = 0; // define the t as the temp number to store the important number (存储进位) 一定要初始化为 0
-    for (int i = 0; i < A.size(); i ++) {
+    for (int i = 0; i < A.size(); i++) {
         t += A[i] * b;
         C.push_back(t % 10); // 存储下来个位
         t /= 10; // 存储下来进位
-
     }
 
     // 最后如果还有进位, 就把 t 反向存储进去
@@ -24,8 +30,8 @@ vector<int> high_precision_mul(vector<int> &A, int b) {
         t /= 10;
     }
 
-    // now the lenth of C is equal to A, so there has an situation '003', which is not good enough
-    while(C.size() > 1 && C.back() == 0) C.pop_back();
+    // now the length of C is equal to A, so there has a situation '003', which is not good enough
+    while (C.size() > 1 && C.back() == 0) C.pop_back();
 
     return C;
 }
@@ -38,16 +44,16 @@ int main() {
 
     cin >> a >> b;
 
-    // define array to stor the input num
+    // define array to store the input num
     vector<int> A;
     // read them in a right to left way
-    for (int i = a.size() - 1; i >= 0; i --) A.push_back(a[i] - '0'); // A = [6, 5, 4, 3, 2, 1]
+    for (int i = a.size() - 1; i >= 0; i--) A.push_back(a[i] - '0'); // A = [6, 5, 4, 3, 2, 1]
 
-    // do the high pricision mul
+    // do the high precision mul
     vector<int> C = high_precision_mul(A, b);
 
     // print the result
-    for (int i = C.size() - 1; i >= 0; i -- ) cout << C[i];
+    for (int i = C.size() - 1; i >= 0; i--) cout << C[i];
 
     return 0;
 }

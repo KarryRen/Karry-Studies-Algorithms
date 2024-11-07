@@ -1,3 +1,10 @@
+/*
+ * @Time    : 2024/10/27 19:12
+ * @Author  : Karry Ren
+ * @Comment : Compute the div large number of str.
+ * @LeetCode: None
+*/
+
 #include<iostream>
 #include<vector>
 #include<algorithm>
@@ -12,7 +19,7 @@ vector<int> high_precision_div(vector<int> &A, int b, int &r) {
     vector<int> C;
 
     r = 0; // 用 r 来存储余数
-    for (int i = A.size() - 1; i >= 0; i --) {
+    for (int i = A.size() - 1; i >= 0; i--) {
         // 除法是从高位往低位运算的
         r = r * 10 + A[i];
         C.push_back(r / b); // 除数直接放入结果数组中
@@ -22,7 +29,7 @@ vector<int> high_precision_div(vector<int> &A, int b, int &r) {
     reverse(C.begin(), C.end());
 
     // now the length of C is equal to A, so there has a situation '003', which is not good enough
-    while(C.size() > 1 && C.back() == 0) C.pop_back();
+    while (C.size() > 1 && C.back() == 0) C.pop_back();
 
     return C;
 }
@@ -35,17 +42,17 @@ int main() {
 
     cin >> a >> b;
 
-    // define array to stor the input num
+    // define array to store the input num
     vector<int> A;
     // read them in a right to left way
-    for (int i = a.size() - 1; i >= 0; i --) A.push_back(a[i] - '0'); // A = [6, 5, 4, 3, 2, 1]
+    for (int i = a.size() - 1; i >= 0; i--) A.push_back(a[i] - '0'); // A = [6, 5, 4, 3, 2, 1]
 
-    // do the high pricision div
+    // do the high precision div
     int r = 0;
     vector<int> C = high_precision_div(A, b, r);
 
     // print the result
-    for (int i = C.size() - 1; i >= 0; i -- ) cout << C[i];
+    for (int i = C.size() - 1; i >= 0; i--) cout << C[i];
     cout << endl << r;
 
     return 0;
