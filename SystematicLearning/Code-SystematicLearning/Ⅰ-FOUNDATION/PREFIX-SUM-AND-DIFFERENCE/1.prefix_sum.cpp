@@ -1,7 +1,8 @@
 /*
-    @author Karry 
-    @date on 2023/8/5.
-    @comment Day 5
+ * @Time    : 2024/11/16 23:13
+ * @Author  : Karry Ren
+ * @Comment : Compute the pre sum.
+ * @LeetCode: 415、303、643
 */
 
 #include<iostream>

@@ -1,7 +1,8 @@
 /*
-    @author Karry 
-    @date on 2023/8/5.
-    @comment Day5
+ * @Time    : 2024/11/16 23:52
+ * @Author  : Karry Ren
+ * @Comment : Compute the sub-matrices sum.
+ * @LeetCode: 304
 */
 
 #include<iostream>

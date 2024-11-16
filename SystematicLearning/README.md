@@ -8,7 +8,7 @@
 
 ### 1.1 SORT
 
-#### [Quick Sort](https://www.acwing.com/problem/content/description/787/) LeetCode 912.
+#### [Quick Sort](https://www.acwing.com/problem/content/description/787/) | LeetCode 912.
 
 快排（时间复杂度 $n log_2n$）的核心思想是==分治==，主要步骤为：
 
@@ -35,11 +35,11 @@ Way 2 : 优美的做法, 开两个指针
 	3. i 和 j 互换, i 右移一位, j 左移一位, 重复 1 - 2, 直至 i 和 j 相遇
 ```
 
-#### [K Number (Quick Select)](https://www.acwing.com/problem/content/788/) LeetCode 215.
+#### [K Number (Quick Select)](https://www.acwing.com/problem/content/788/) | LeetCode 215.
 
 快速选择，和上述快速选择一脉相承，是快速排序算法的一种应用。**注意**：LeetCode 上是找最大的 k^th number，我的代码中实现的是选最小的 k^th number，修改思路很简单，快速排序调整成由大到小即可。
 
-#### [Merge Sort](https://www.acwing.com/problem/content/789/) LeetCode 912.
+#### [Merge Sort](https://www.acwing.com/problem/content/789/) | LeetCode 912.
 
 归并排序（时间复杂度 $nlog_2n$），同样是==分治==的思想，主要步骤如下：
 
@@ -52,7 +52,7 @@ Step 3. 将排好的归并起来 *重点*
 
 ==实现归并==：具体实现方法为==双指针==，两个有序的数组分别设置一个指针不断往后跑。归并排序是稳定的（稳定的概念：相同的数排序后相对位置是否发生改变）
 
-#### [Inversion Number](https://www.acwing.com/problem/content/790/) LeetCode LCR 170.
+#### [Inversion Number](https://www.acwing.com/problem/content/790/) | LeetCode LCR 170.
 
 思路同样是==分治==，该题目本质上是归并排序的一个应用，首先找到中点，将所有的逆序对情况分为三种：
 
@@ -62,18 +62,14 @@ Step 3. 将排好的归并起来 *重点*
 3. 逆序对被中点分割（两边排序与否，不产生影响的）
 ```
 
-
-
 ### 1.2 DICHOTOMY
 
 > 二分可以划分为`整数二分`和`实数二分`。二分的本质并不是单调性，而是存在一种划分方式。也就是说：有单调性的可以二分，但是没有单调性的也可能可以二分。
 >
 
-#### [Number Range](https://www.acwing.com/problem/content/791/)
+#### [Number Range](https://www.acwing.com/problem/content/791/) | LeetCode 704.
 
-二分的本质是可以找到一个确定的边界将原结构一分为二。 二分算法一定是可以找到边界的，只不过边界的答案不满足性质，那就说明这个题目无解了。
-
-共有两个模板，关于如何选择，有一个迅速的口诀 ==左 1 右 0==（来自于边界是否会死循环）：
+二分的本质是可以找到一个确定的边界将原结构一分为二。 二分算法一定是可以找到边界的，只不过边界的答案不满足性质，那就说明这个题目无解了。解决这些题目共有两个模板，关于如何选择，有一个迅速的口诀 ==左 1 右 0==（来自于边界是否会死循环）：
 
 ```c++
 // 记住二分的本质前提 永远是区间找边界，那就可能是找左边界，或者是右边界
@@ -111,35 +107,13 @@ void dichotomy_branch1(){
 }
 ```
 
-#### [Cubic Root](https://www.acwing.com/problem/content/792/)
+#### [Cubic Root](https://www.acwing.com/problem/content/792/) | LeetCode 69.
 
-> 没有边界问题了，但是有精确值问题，如果是保留 n 位小数，一般是让 l 和 r 之间的差别小于 $10^{-(n + 2)}$ 注意变量类型即可
+没有边界问题了，但是有精确值问题，如果是保留 n 位小数，一般是让 l 和 r 之间的差别小于 $10^{-(n + 2)}$ ，同时注意变量类型即可。在解 LeetCode 求平方根的时候，遇到了输出整数数值的边界问题，这个地方只需要加一个 Check 数值即可。另外，在求平方根和三次方根这种数学问题的时候，往往有更简单的数值求解法，比如 LeetCode 对[**平方根求解**](https://leetcode.cn/problems/sqrtx/solutions/238553/x-de-ping-fang-gen-by-leetcode-solution/)给出的牛顿下降法，或者算子替代法。
 
-```c++
-#include<iostream>
+#### Divide | LeetCode 29.
 
-using namespace std;
-
-int main(){
-	double num; // the num needed to be computed the cubic root
-	scanf("%lf", &num);
-	
-	double l = -1e5, r = 1e5; // the l and r boundary
-	while(l < r - 1e-8){ // 1e-8 is from the experience
-		double mid = (l + r) / 2;
-		
-		if(mid * mid * mid >= num) r = mid;
-		else l = mid;
-		printf("%lf %lf\n", l, r);
-	}
-
-	printf("%lf\n", l);
-	
-	return 0;
-}
-```
-
-
+两数相除，也用到了二分查找的方法，详细解释看代码。
 
 ### 1.3 HIGH-PRECISION
 
@@ -152,360 +126,43 @@ int main(){
 1. ==大整数的存储==：这么大的整数用 int, long long 都表示不了，把大整数的每一位都依次存到数组中（Vector ）。存储思路是让高位存在数组的小下标位置。
 2. ==运算的过程==：本质就是模拟人工加减乘除的过程，其实算法的本质就是对人类思考的模拟
 
-#### [ADD](https://www.acwing.com/problem/content/793/)
+#### [ADD](https://www.acwing.com/problem/content/793/) | LeetCode 415
 
-用代码对两个数组进行操作，模拟人工算加法的过程，注意进位即可。
+首先将文本转化为数字，用数组来存储文本标识的数据。对两个数组进行操作，模拟人工算加法的过程，算法上无非就是加法和进位的思想，但是在功能上需要注意使用 Vector 或 String 的相关操作。核心是采用一个临时变量来存储加和结果，进行进位计算。
 
-```c++
-#include<iostream>
-#include<vector>
+#### [SUB](https://www.acwing.com/problem/content/794/) 
 
-using namespace std;
+较比加法而言，减法将进位变为了借位，没有什么本质区别。
 
-vector<int> high_precision_add(vector<int> &A, vector<int> &B) {
-	// using the '&' can reduce the time
+#### [MUL](https://www.acwing.com/problem/content/795/) | LeetCode 43
 
-	// define C as the result
-	vector<int> C;
-
-	int t = 0; // define the t as the temp number to store the important number (存储进位) 一定要初始化为 0  
-	for (int i = 0; i < A.size() || i < B.size(); i ++) {
-		if (i < A.size()) t += A[i];
-		if (i < B.size()) t += B[i];
-		C.push_back(t % 10); // 存储下来个位
-		t /= 10; // 存储下来进位
-	}
-
-	if(t) C.push_back(1); // 最后一位如果还有进位, 就再多一个 1 
-	
-	return C; 
-}
-
-int main() {
-	// define string to store the input number, so that it won't overfit
-	// let a = '123456'
-	// let b = '654321'
-	string a, b;
-	cin >> a >> b;
-
-	// define two arraies to stor the input num
-	vector<int> A, B;
-	// read them in a right to left way
-	for (int i = a.size() - 1; i >= 0; i --) A.push_back(a[i] - '0'); // A = [6, 5, 4, 3, 2, 1]
-	for (int i = b.size() - 1; i >= 0; i --) B.push_back(b[i] - '0'); // B = [1, 2, 3, 4, 5, 6]
-
-	// do the high pricision add
-	vector<int> C = high_precision_add(A, B);
-
-	// print the result
-	for (int i = C.size() - 1; i >= 0; i -- ) cout << C[i];
-
-	return 0;
-}
-```
-
-#### [SUB](https://www.acwing.com/problem/content/794/)
-
-```c++
-#include<iostream>
-#include<vector>
-
-using namespace std;
-
-bool cmp(vector<int> &A, vector<int> &B) {
-	// compare the A and B, judge if A >= B
-
-	// compare the lenghth first. if not equal
-	if (A.size() != B.size()) return A.size() > B.size();
-
-	// if lenth equal, compare the num from top to down
-	for(int i = A.size() - 1; i >= 0; i--)
-		if(A[i] != B[i])
-			return A[i] > B[i];
-
-	// equal
-	return true;
-}
-
-// C = A - B ( A >= B )
-vector<int> high_precision_sub(vector<int> &A, vector<int> &B) {
-	// using the '&' can reduce the time
-
-	// define C as the result
-	vector<int> C;
-
-	int t = 0; // define the t as the temp number to store the important number (存储借位)
-	for (int i = 0; i < A.size(); i ++) { // the length of A must be higher than the lenth of B
-		t = A[i] - t;
-		if (i < B.size()) t -= B[i];
-		if(t >= 0) { // 如果不存在借位现象就直接将这一位存储起来, 然后 t 置零 
-			C.push_back(t);
-			t = 0; 
-		} else { // 如果存在借位现象, 就直接存 t + 10 
-			C.push_back(t + 10);
-			t = 1;
-		}
-	}
-	
-	// now the lenth of C is equal to A, so there has an situation '003', which is not good enough
-	while(C.size() > 1 && C.back() == 0) C.pop_back();
-
-	return C;
-}
-
-int main() {
-	// define string to store the input number, so that it won't overfit
-	// let a = '123456'
-	// let b = '654321'
-	string a, b;
-	cin >> a >> b;
-
-	// define two arraies to stor the input num
-	vector<int> A, B;
-	// read them in a right to left way
-	for (int i = a.size() - 1; i >= 0; i --) A.push_back(a[i] - '0'); // A = [6, 5, 4, 3, 2, 1]
-	for (int i = b.size() - 1; i >= 0; i --) B.push_back(b[i] - '0'); // B = [1, 2, 3, 4, 5, 6]
-
-	// do the high pricision sub
-	if (cmp(A, B)) {
-		vector<int> C = high_precision_sub(A, B);
-
-		// print the result
-		for (int i = C.size() - 1; i >= 0; i -- ) cout << C[i];
-	} else {
-		vector<int> C = high_precision_sub(B, A);
-
-		// print the minus
-		cout << "-";
-		// print the result
-		for (int i = C.size() - 1; i >= 0; i -- ) cout << C[i];
-	}
-
-
-	return 0;
-}
-```
-
-#### [MUL](https://www.acwing.com/problem/content/795/)
-
-> 因为这个地方的除数是一个比较小的数，可以直接用 int 进行存储，所以乘除的思想都是直接进行计算。
->
-> 这样的话乘和加的思想完全是一脉相承了
-
-```c++
-#include<iostream>
-#include<vector>
-
-using namespace std;
-
-// C = A * b
-vector<int> high_precision_mul(vector<int> &A, int b) {
-	// using the '&' can reduce the time
-
-	// define C as the result
-	vector<int> C;
-
-	int t = 0; // define the t as the temp number to store the important number (存储进位) 一定要初始化为 0
-	for (int i = 0; i < A.size(); i ++) {
-		t += A[i] * b;
-		C.push_back(t % 10); // 存储下来个位
-		t /= 10; // 存储下来进位
-		
-	}
-	
-	// 最后如果还有进位, 就把 t 反向存储进去
-	while (t) {
-		C.push_back(t % 10);
-		t /= 10;
-	} 
-	
-	// now the lenth of C is equal to A, so there has an situation '003', which is not good enough
-	while(C.size() > 1 && C.back() == 0) C.pop_back();
-
-	return C;
-}
-
-int main() {
-	// define string to store the input number, so that it won't overfit
-	// let a = '123456'
-	string a;
-	int b;
-
-	cin >> a >> b;
-
-	// define array to stor the input num
-	vector<int> A;
-	// read them in a right to left way
-	for (int i = a.size() - 1; i >= 0; i --) A.push_back(a[i] - '0'); // A = [6, 5, 4, 3, 2, 1]
-
-	// do the high pricision mul
-	vector<int> C = high_precision_mul(A, b);
-
-	// print the result
-	for (int i = C.size() - 1; i >= 0; i -- ) cout << C[i];
-
-	return 0;
-}
-```
+因为这个地方的除数是一个比较小的数，可以直接用 int 进行存储，所以乘除的思想都是直接进行计算。这样的话乘和加的思想完全是一脉相承了。ACWing 上是一个简单的版本，如果 Num2 也变成了和 Num1 一样的情况，就变成了两个大数相乘，就需要真正用到位和位相乘的计算了，在这给出了一个简单的用加法实现乘法的功能。
 
 #### [DIV](https://www.acwing.com/problem/content/796/)
 
-> 除法的逻辑看起来很难，但是仔细看的话其实并不复杂，和之前的进位 / 借位 的核心逻辑不同，其核心是余数。
-
-```c++
-#include<iostream>
-#include<vector>
-#include<algorithm>
-
-using namespace std;
-
-// 返回除法的结果以及余数 
-vector<int> high_precision_div(vector<int> &A, int b, int &r) {
-	// using the '&' can reduce the time
-
-	// define C as the result
-	vector<int> C;
-
-	r = 0; // 用 r 来存储余数 
-	for (int i = A.size() - 1; i >= 0; i --) {
-		// 除法是从高位往低位运算的 
-		r = r * 10 + A[i];
-		C.push_back(r / b); // 除数直接放入结果数组中 
-		r %= b; // 余数当作下一次的运算结果 
-	}
-	
-	reverse(C.begin(), C.end());
-	
-	// now the lenth of C is equal to A, so there has an situation '003', which is not good enough
-	while(C.size() > 1 && C.back() == 0) C.pop_back();
-
-	return C;
-}
-
-int main() {
-	// define string to store the input number, so that it won't overfit
-	// let a = '123456'
-	string a;
-	int b;
-
-	cin >> a >> b;
-
-	// define array to stor the input num
-	vector<int> A;
-	// read them in a right to left way
-	for (int i = a.size() - 1; i >= 0; i --) A.push_back(a[i] - '0'); // A = [6, 5, 4, 3, 2, 1]
-
-	// do the high pricision div
-	int r = 0;
-	vector<int> C = high_precision_div(A, b, r);
-
-	// print the result
-	for (int i = C.size() - 1; i >= 0; i -- ) cout << C[i];
-	cout << endl << r;
-
-	return 0;
-}
-```
+除法的逻辑看起来很难，但是仔细看的话其实并不复杂，和之前的进位 / 借位 的核心逻辑不同，其核心是余数。
 
 ### 1.4 PREFIX-SUM AND DIFFERENCE
 
 > 前缀和和差分本质是一个互运算，二者所用的核心的原理是前缀求和中的递推以及集合代表个体的思想，这种思想值得思索。
 
-#### [Prefix Sum](https://www.acwing.com/problem/content/797/)
+#### [PreSum](https://www.acwing.com/problem/content/797/) [**Ref**](https://blog.csdn.net/fuxuemingzhu/article/details/120132922) ｜ LeetCode 1480、303、643
 
-> 前缀和问题就是求数组的一段数字的和，进而降低求解数组和的复杂度，核心在于：
->
-> 1. 计算前缀和的扫描算法
-> 2. 边界求解的公式
->
-> 先扫一遍完成存储后，再使用所存储的内容进行辅助运算。这样就可以避免每一次的复杂度都是 $n$ 了
+前缀和问题简单来说就是求数组的一段数字的和，降低求解数组和的复杂度，核心在于：
 
-```c++
-/*
-    @author Karry 
-    @date on 2023/8/5.
-    @comment Day 5
-*/
+- 计算前缀和的扫描算法，得到从 0 到 n 的和
+- 边界求解的公式，通过边界差进行计算
 
-#include<iostream>
+先扫一遍完成存储后，再使用所存储的内容进行辅助运算。这样就可以避免每一次的复杂度都是 $n$ 了
 
-using namespace std;
+#### [Submatrices Sum](https://www.acwing.com/problem/content/798/) ｜ LeetCode 304
 
-const int N = 1e6 + 10; // the boundary
-int q[N], s[N]; // the raw array and the sum array
+将上述的一维前缀和拓展为二维前缀和，核心还是思考如下两个问题：
 
-int main() {
-    int m, n; // the input num
-    scanf("%d %d", &n, &m);
+1. 如何计算和 ？
+2. 如何利用和求解 ？
 
-    // input the array
-    for (int i = 1; i <= n; i++) scanf("%d", &q[i]);
-
-    // compute the sum using equation (attention => s[0] = 0)
-    for (int i = 1; i <= n; i++) s[i] = s[i - 1] + q[i];
-
-    while (m--) {
-        int l, r; // the began l and the end r
-        scanf("%d %d", &l, &r);
-
-        printf("%d\n", s[r] - s[l - 1]); // the important equation
-    }
-
-    return 0;
-}
-```
-
-#### [Submatrices Sum](https://www.acwing.com/problem/content/798/)
-
-> 将上述的一维前缀和拓展为二维前缀和，核心还是思考如下两个问题：
->
-> 1. 如何计算和 ？
-> 2. 如何利用和求解 ？
->
-> 同样的还是递推思路！
-
-```c++
-/*
-    @author Karry 
-    @date on 2023/8/5.
-    @comment Day5
-*/
-
-#include<iostream>
-
-using namespace std;
-
-const int N = 1e3 + 10; // the boundary
-
-int q[N][N], s[N][N]; // the raw array and the sum array
-
-int main() {
-    int n, m, t;
-
-    scanf("%d %d %d", &n, &m, &t);
-
-    // input the raw array
-    for (int i = 1; i <= n; i++)
-        for (int j = 1; j <= m; j++)
-            scanf("%d", &q[i][j]);
-
-    // step 1. compute the sum array
-    for (int i = 1; i <= n; i++)
-        for (int j = 1; j <= m; j++)
-            s[i][j] = s[i - 1][j] + s[i][j - 1] - s[i - 1][j - 1] + q[i][j];
-
-    // step 2. compute the result one by one
-    while (t--) {
-        int x1, y1, x2, y2;
-
-        scanf("%d %d %d %d", &x1, &y1, &x2, &y2);
-
-        printf("%d\n", s[x2][y2] - s[x2][y1 - 1] - s[x1 - 1][y2] + s[x1 - 1][y1 - 1]);
-    }
-
-    return 0;
-}
-```
+同样的还是递推思路，只不过从一维变为了二维。
 
 #### [Difference](https://www.acwing.com/problem/content/799/)
 
