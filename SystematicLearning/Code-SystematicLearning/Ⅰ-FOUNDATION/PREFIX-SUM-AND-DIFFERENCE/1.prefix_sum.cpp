@@ -3,6 +3,7 @@
  * @Author  : Karry Ren
  * @Comment : Compute the pre sum.
  * @LeetCode: 415、303、643
+ *            724、LCR012、1991
 */
 
 #include<iostream>

@@ -1,7 +1,8 @@
 /*
-    @author Karry 
-    @date on 2023/8/6.
-    @comment the difference is actually the minus operation of prefix
+ * @Time    : 2024/11/23 22:24
+ * @Author  : Karry Ren
+ * @Comment : Do the difference.
+ * @LeetCode: 370, 1109, 1094
 */
 
 #include<iostream>
