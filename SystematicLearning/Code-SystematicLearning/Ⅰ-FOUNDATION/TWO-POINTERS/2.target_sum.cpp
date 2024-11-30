@@ -1,7 +1,8 @@
 /*
-    @author Karry 
-    @date on 2023/8/7.
-    @Day 7 target sum
+ * @Time    : 2024/11/23 23:30
+ * @Author  : Karry Ren
+ * @Comment : Get the target number.
+ * @LeetCode: 167
 */
 
 #include<iostream>

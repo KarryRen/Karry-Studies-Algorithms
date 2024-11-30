@@ -1,7 +1,8 @@
 /*
-    @author Karry 
-    @date on 2023/8/6.
-    @comment Day 6 the difference in matrices
+ * @Time    : 2024/11/30 22:36
+ * @Author  : Karry Ren
+ * @Comment : Do the sub-matrices difference.
+ * @LeetCode: None
 */
 
 #include<iostream>

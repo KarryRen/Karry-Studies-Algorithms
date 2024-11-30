@@ -1,7 +1,8 @@
 /*
-    @author Karry 
-    @date on 2023/8/7.
-    @comment Day 7 two pointers lus
+ * @Time    : 2024/11/23 22:57
+ * @Author  : Karry Ren
+ * @Comment : The longest unrepeated subsequence.
+ * @LeetCode: 3
 */
 
 #include<iostream>
@@ -20,7 +21,7 @@ int main() {
     // input the array
     for (int i = 0; i < n; i++) scanf("%d", &a[i]);
 
-    // lus
+    // plus
     for (int i = 0, j = 0; i < n; i++) {
         s[a[i]]++; // doc the times of a[i]
         while (j <= i && s[a[i]] > 1) {

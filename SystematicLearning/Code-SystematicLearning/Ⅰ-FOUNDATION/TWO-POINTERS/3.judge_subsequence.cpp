@@ -1,7 +1,8 @@
 /*
-    @author Karry 
-    @date on 2023/8/7.
-    @Day 7 judge subsequence
+ * @Time    : 2024/11/23 22:57
+ * @Author  : Karry Ren
+ * @Comment : Judge whether is subsequence.
+ * @LeetCode: 392
 */
 
 #include<iostream>

@@ -1,7 +1,7 @@
 /*
  * @Time    : 2024/11/23 22:24
  * @Author  : Karry Ren
- * @Comment : Do the difference.
+ * @Comment : Do the difference (a counter of prefix sum).
  * @LeetCode: 370, 1109, 1094
 */
 
