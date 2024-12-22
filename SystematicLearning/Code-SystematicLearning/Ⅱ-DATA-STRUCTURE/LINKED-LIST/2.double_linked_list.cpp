@@ -1,7 +1,7 @@
 /*
-    @author Karry 
-    @date on 2023/8/10.
-    @comment Day 10 采用数组实现双链表（数据结构第一课）
+ * @Time    : 2024/12/22 15:27
+ * @Author  : Karry Ren
+ * @Comment : The double linked list.
 */
 
 

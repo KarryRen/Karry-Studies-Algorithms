@@ -1,7 +1,7 @@
 /*
-    @author Karry 
-    @date on 2023/8/10.
-    @comment Day 10, 采用数组的方法实现单链表（数据结构第一课）
+ * @Time    : 2024/12/22 15:27
+ * @Author  : Karry Ren
+ * @Comment : The single linked list.
 */
 
 #include<iostream>
@@ -20,6 +20,7 @@ const int N = 1e5 + 10; // 数据范围定义
  * 3. ne[N] 指每一个节点的下一指向的下标是多少（通过下标访问）
  * 4. idx 表示插入点的下标 （不断向前推进）
 */
+
 int head, e[N], ne[N], idx;
 
 // 链表初始化

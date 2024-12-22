@@ -1,9 +1,7 @@
 /*
-    @author Karry 
-    @date on 2023/8/8.
-    @comment Day 8 the k bit of n
-             just an equation => n >> k & 1
-             we can also use this to transfer a number to bits
+ * @Time    : 2024/12/22 14:28
+ * @Author  : Karry Ren
+ * @Comment : Find the k bits of number n.
 */
 
 #include<iostream>

@@ -1,7 +1,7 @@
 /*
-    @author Karry 
-    @date on 2023/8/8.
-    @comment Day 8 the number of one
+ * @Time    : 2024/12/22 14:29
+ * @Author  : Karry Ren
+ * @Comment : Find the number of one in number n.
 */
 
 #include<iostream>

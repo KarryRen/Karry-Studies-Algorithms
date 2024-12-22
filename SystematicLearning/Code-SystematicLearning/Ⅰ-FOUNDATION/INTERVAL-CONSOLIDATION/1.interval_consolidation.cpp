@@ -1,7 +1,8 @@
 /*
-    @author Karry 
-    @date on 2023/8/9.
-    @comment Day 9
+ * @Time    : 2024/12/22 15:02
+ * @Author  : Karry Ren
+ * @Comment : The interval consolidation.
+ * @LeetCode: 56
 */
 
 #include<iostream>

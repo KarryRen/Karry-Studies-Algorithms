@@ -1,8 +1,10 @@
 /*
-    @author Karry 
-    @date on 2023/8/9.
-    @comment Day 9
+ * @Time    : 2024/12/22 15:02
+ * @Author  : Karry Ren
+ * @Comment : The sum of interval.
+ * @LeetCode: None
 */
+
 #include<iostream>
 #include<vector>
 #include<algorithm>
@@ -23,11 +25,9 @@ int find(int x) {
     int l = 0, r = alls.size() - 1;
     while (l < r) {
         int mid = l + r >> 1;
-
         if (alls[mid] >= x) r = mid;
         else l = mid + 1;
     }
-
     return r + 1; // 返回下标 + 1
 }
 
@@ -49,7 +49,8 @@ int main() {
         cin >> l >> r;
 
         query_bound.emplace_back(l, r); // note the boundary (l, r)
-        // same as top 或许你会有疑问，为什么还需要对 query 中的数字进行保留呢，其实很简单，因为后续还需要对这些下标进行操作，所以必须也把它们离散化了
+        // same as top 或许你会有疑问，为什么还需要对 query 中的数字进行保留呢，其实很简单，
+        // 因为后续还需要对这些下标进行操作，所以必须也把它们离散化了
         alls.push_back(l);
         alls.push_back(r);
     }
@@ -71,7 +72,6 @@ int main() {
     for (auto item: query_bound) {
         int l = find(item.first); // index 离散化后的结果
         int r = find(item.second); // index 离散化后的结果
-
         cout << s[r] - s[l - 1] << endl;
     }
 
